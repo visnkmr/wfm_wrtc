@@ -3,9 +3,11 @@ import React from 'react'
 
 export default function Home() {
     const [stext,setstext] = React.useState("")
+    const [answer,setanswer] = React.useState("")
     var ds="";
     const localconnection=new RTCPeerConnection()
     const datachannel=localconnection.createDataChannel("channel")
+    
     datachannel.onmessage = e => {
       ds+="\n got message "+e.data;
       setstext(ds)
@@ -17,6 +19,7 @@ export default function Home() {
       setstext(ds)
     }
     localconnection.createOffer().then(o=>localconnection.setLocalDescription(o)).then(a=>{ds+="\nset successfully."})
+    localconnection.setRemoteDescription(answer)
   return (
     <>
     <p>Enter text to show</p>
@@ -25,7 +28,7 @@ export default function Home() {
         
         onChange={(event) =>
           {
-            // setstext(event.target.value)
+            setanswer(event.target.value)
             console.log(event.target.value)
             
             // || table.getColumn('reponame')?.setFilterValue(event.target.value)
