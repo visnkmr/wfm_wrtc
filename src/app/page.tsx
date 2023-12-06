@@ -1,43 +1,56 @@
 "use client"
-import React from 'react'
+import React, { useEffect } from 'react'
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 
+import { useState } from 'react'
+import Peer from 'simple-peer'
 export default function Home() {
-    const [stext,setstext] = React.useState("")
-    const [answer,setanswer] = React.useState("")
-    var ds="";
-    const localconnection=new RTCPeerConnection()
-    const datachannel=localconnection.createDataChannel("channel")
-    
-    datachannel.onmessage = e => {
-      ds+="\n got message "+e.data;
-      setstext(ds)
-    } 
-    datachannel.onopen=e=>{ds+="\n con opened";
-      setstext(ds)
+    const [sdp, setSdp] = useState('')
+    const [peer, setPeer] = useState(null)
+    const [showtext, setshowtext] = useState("")
+    const p = new Peer({
+      initiator: true,
+      trickle: false,
+      wrtc:nodeDatachannelPolyfill
+    })
+  useEffect(()=>{
+
+      p.on('error', err => console.log('error', err))
+  
+      p.on('signal', data => {
+        console.log('SIGNAL', JSON.stringify(data))
+        setshowtext(JSON.stringify(data))
+      })
+      p.on('connect', () => {
+        console.log('CONNECT')
+        p.send('whatever' + Math.random())
+      })
+  
+    },[])
+    const handleJoin=() => {
+      p.signal(JSON.parse(sdp))
     }
-    localconnection.onicecandidate=e=>{ds+="\nnew ice candidate"+JSON.stringify(localconnection.localDescription);
-      setstext(ds)
-    }
-    localconnection.createOffer().then(o=>localconnection.setLocalDescription(o)).then(a=>{ds+="\nset successfully."})
-    localconnection.setRemoteDescription(answer)
-    datachannel.send("test")
-  return (
-    <>
-    <p>Enter text to show</p>
-    <input
-        placeholder='Search in commit message for...'
-        
-        onChange={(event) =>
-          {
-            setanswer(event.target.value)
-            console.log(event.target.value)
-            
-            // || table.getColumn('reponame')?.setFilterValue(event.target.value)
-          }
-        }
-        className='w-[100%] bg-black'
-      />
-        <p>{stext}</p>
-    </>
-  )
+
+
+    const handleSend=()=>p.on('data', data => {
+      console.log('data: ' + data)
+    })
+  
+    return (
+      <div>
+        {/* <h1>Simple Next.js App</h1> */}
+        {/* <button onClick={handleConnect}>Connect</button> */}
+        <br />
+        {showtext}
+        <textarea value={sdp} onChange={(e) => setSdp(e.target.value)} />
+        <br />
+        <button onClick={handleJoin}>Join</button>
+        <br />
+        <button onClick={handleSend}>Send</button>
+      </div>
+    )
+    // return (
+    //   <></>
+    // )
+  
 }

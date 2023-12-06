@@ -1,51 +1,57 @@
 "use client"
-import React from 'react'
+import React, { useEffect } from 'react'
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 
+
+import { useState } from 'react'
+import Peer from 'simple-peer'
 export default function Home() {
-    const [stext,setstext] = React.useState("")
-    var ds="";
-    const [offer,setoffer] = React.useState("")
-    const localconnection=new RTCPeerConnection()
-    // const datachannel=localconnection.createDataChannel("channel")
-    localconnection.onicecandidate=e=>{ds+="\nnew ice candidate"+JSON.stringify(localconnection.localDescription);
-      setstext(ds)
-    }
-    var recievechannel:RTCDataChannel;
-    localconnection.ondatachannel=e=>{
-        recievechannel=e.channel;
-        recievechannel.onmessage = e => {
-          ds+="\n got message "+e.data;
-          setstext(ds)
-        } 
-        recievechannel.onopen=e=>{ds+="\n con opened";
-          setstext(ds)
-        }
-        recievechannel.onclose =e => console.log("closed!!!!!!");
-        // localconnection.channel = recievechannel;
+    const [sdp, setSdp] = useState('')
+    const [peer, setPeer] = useState(null)
+    const [showtext, setshowtext] = useState("")
+    const p = new Peer({
+      initiator: false,
+      trickle: false,
+      wrtc:nodeDatachannelPolyfill
+    })
+  useEffect(()=>{
+
+      p.on('error', err => console.log('error', err))
+  
+      p.on('signal', data => {
+        console.log('SIGNAL', JSON.stringify(data))
+        setshowtext(JSON.stringify(data))
+      })
+      p.on('connect', () => {
+        console.log('CONNECT')
+        p.send('whatever' + Math.random())
+      })
+  
+    },[])
+    const handleJoin=() => {
+      p.signal(JSON.parse(sdp))
     }
 
-    localconnection.setRemoteDescription(offer).then(a=>ds+=("offer set"))
-    localconnection.createAnswer().then(a => localconnection.setLocalDescription(a)).then(a=>
-        ds+=(JSON.stringify(localconnection.localDescription)))\
-    if(offer && recievechannel) recievechannel.send("recieved")
-    // localconnection.createOffer().then(o=>localconnection.setLocalDescription(o)).then(a=>{ds+="\nset successfully."})
-  return (
-    <>
-    <p>Enter text to show</p>
-    <input
-        placeholder='Search in commit message for...'
-        
-        onChange={(event) =>
-          {
-            setoffer(event.target.value)
-            console.log(event.target.value)
-            
-            // || table.getColumn('reponame')?.setFilterValue(event.target.value)
-          }
-        }
-        className='w-[100%] bg-black'
-      />
-        <p>{stext}</p>
-    </>
-  )
+
+    const handleSend=()=>p.on('data', data => {
+      console.log('data: ' + data)
+    })
+  
+    return (
+      <div>
+        {/* <h1>Simple Next.js App</h1> */}
+        {/* <button onClick={handleConnect}>Connect</button> */}
+        <br />
+        {showtext}
+        <textarea value={sdp} onChange={(e) => setSdp(e.target.value)} />
+        <br />
+        <button onClick={handleJoin}>Join</button>
+        <br />
+        <button onClick={handleSend}>Send</button>
+      </div>
+    )
+    // return (
+    //   <></>
+    // )
+  
 }
