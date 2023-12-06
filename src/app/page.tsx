@@ -20,6 +20,7 @@ export default function Home() {
     }
     localconnection.createOffer().then(o=>localconnection.setLocalDescription(o)).then(a=>{ds+="\nset successfully."})
     localconnection.setRemoteDescription(answer)
+    datachannel.send("test")
   return (
     <>
     <p>Enter text to show</p>

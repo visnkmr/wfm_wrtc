@@ -10,8 +10,9 @@ export default function Home() {
     localconnection.onicecandidate=e=>{ds+="\nnew ice candidate"+JSON.stringify(localconnection.localDescription);
       setstext(ds)
     }
+    var recievechannel:RTCDataChannel;
     localconnection.ondatachannel=e=>{
-        const recievechannel=e.channel;
+        recievechannel=e.channel;
         recievechannel.onmessage = e => {
           ds+="\n got message "+e.data;
           setstext(ds)
@@ -20,12 +21,13 @@ export default function Home() {
           setstext(ds)
         }
         recievechannel.onclose =e => console.log("closed!!!!!!");
-        localconnection.channel = recievechannel;
+        // localconnection.channel = recievechannel;
     }
 
     localconnection.setRemoteDescription(offer).then(a=>ds+=("offer set"))
     localconnection.createAnswer().then(a => localconnection.setLocalDescription(a)).then(a=>
-        ds+=(JSON.stringify(localconnection.localDescription)))
+        ds+=(JSON.stringify(localconnection.localDescription)))\
+    if(offer && recievechannel) recievechannel.send("recieved")
     // localconnection.createOffer().then(o=>localconnection.setLocalDescription(o)).then(a=>{ds+="\nset successfully."})
   return (
     <>
