@@ -1,43 +1,87 @@
 "use client"
-import React from 'react'
+import { DataConnection, Peer } from 'peerjs';
+import React, { useEffect } from 'react'
 
 export default function Home() {
-    const [stext,setstext] = React.useState("")
-    const [answer,setanswer] = React.useState("")
-    var ds="";
-    const localconnection=new RTCPeerConnection()
-    const datachannel=localconnection.createDataChannel("channel")
-    
-    datachannel.onmessage = e => {
-      ds+="\n got message "+e.data;
-      setstext(ds)
-    } 
-    datachannel.onopen=e=>{ds+="\n con opened";
-      setstext(ds)
-    }
-    localconnection.onicecandidate=e=>{ds+="\nnew ice candidate"+JSON.stringify(localconnection.localDescription);
-      setstext(ds)
-    }
-    localconnection.createOffer().then(o=>localconnection.setLocalDescription(o)).then(a=>{ds+="\nset successfully."})
-    localconnection.setRemoteDescription(answer)
-    datachannel.send("test")
-  return (
-    <>
-    <p>Enter text to show</p>
-    <input
-        placeholder='Search in commit message for...'
-        
-        onChange={(event) =>
-          {
-            setanswer(event.target.value)
-            console.log(event.target.value)
-            
-            // || table.getColumn('reponame')?.setFilterValue(event.target.value)
-          }
+  // var peer:Peer;
+  const [peerid,setpid] = React.useState("")
+  const [messages,setm] = React.useState("")
+  const [peer,setp] = React.useState<Peer>()
+  var conn:DataConnection;
+  //  function join() {
+            useEffect(()=>{
+              const p = new Peer()
+              setp(p)
+              
+            },[])
+            const join =()=>console.log("Connecting..");
+            if(peer){
+
+              // when connection is created, handle the event - 
+              peer.on('open', function (id) {
+                  console.log('Connected to Signaling Server ID : ' + id);
+                  // set the input value
+                  setpid(id)
+              });
+  
+              peer.on('connection', function (c) {
+                  conn = c
+                  console.log("New connection : ")
+                  console.log(conn)
+  
+                  // set the friend peer id we just got
+                  var fpeerIDField = document.querySelector("#fpeerid")
+                  fpeerIDField.value = c.peer
+  
+                  // handle message receive
+                  conn.on('open', function () {
+                      // Receive messages - receiver side
+                      conn.on('data', function (data) {
+                          console.log('Received', data);
+                          setm("Friend : " + data)
+                      });
+                  });
+              });
+          // }
+            }
+
+        function connect() {
+            var fpeerIDField = document.querySelector("#fpeerid")
+            console.log("connecting to " + fpeerIDField.value)
+            conn = peer.connect(fpeerIDField.value);
+            console.log(conn)
+            // open event called when connection gets created
+            // conn.on('open', function () {
+            //     console.log("connected")
+            //     // Receive messages - sender side
+            //     conn.on('data', function (data) {
+            //         console.log('Received', data);
+            //         printMsg("Friend : " + data)
+            //     });
+            // });
         }
-        className='w-[100%] bg-black'
-      />
-        <p>{stext}</p>
-    </>
+
+        function sendMessage() {
+            var msg = document.querySelector("#msg")
+            console.log("sending message")
+            // send message at sender or receiver side
+            if (conn && conn.open) {
+                setm("Me : " + msg.value)
+                conn.send(msg.value);
+            }
+        }
+  return (
+    <div className='grid grid-flow-row'>
+    <p>{peerid}</p>
+    <button onClick={join}>Join</button>
+
+    <input type="text" id="fpeerid" placeholder="Peer ID"/> 
+    <button onClick={connect}>Connect</button>
+
+    <input type="text" id="msg" placeholder="Message.."/>
+    <button id="send" onClick={sendMessage}>Send</button>
+
+    <p>{messages}</p>
+    </div>
   )
 }
