@@ -6,9 +6,6 @@ export default function Home() {
   // var peer:Peer;
   const [peerid,setpid] = React.useState("")
   const [messages,setm] = React.useState("")
-  const appendMessage = (newMessage) => {
-  setm((prevMessages) => prevMessages + newMessage);
-};
   const [peer,setp] = React.useState<Peer>()
   var conn:DataConnection;
   //  function join() {
@@ -17,19 +14,20 @@ export default function Home() {
               setp(p)
               
             },[])
-            const join =()=>appendMessage("Connecting..");
+            const join =()=>console.log("Connecting..");
             if(peer){
 
               // when connection is created, handle the event - 
               peer.on('open', function (id) {
-                 appendMessage('Connected to Signaling Server ID : ' + id);
+                  console.log('Connected to Signaling Server ID : ' + id);
                   // set the input value
                   setpid(id)
               });
   
               peer.on('connection', function (c) {
                   conn = c
-                  appendMessage("New connection : "+conn)
+                  console.log("New connection : ")
+                  console.log(conn)
   
                   // set the friend peer id we just got
                   var fpeerIDField = document.querySelector("#fpeerid")
@@ -40,7 +38,7 @@ export default function Home() {
                       // Receive messages - receiver side
                       conn.on('data', function (data) {
                           console.log('Received', data);
-                          appendMessage("Friend : " + data)
+                          setm("Friend : " + data)
                       });
                   });
               });
@@ -49,7 +47,7 @@ export default function Home() {
 
         function connect() {
             var fpeerIDField = document.querySelector("#fpeerid")
-            appendMessage("connecting to " + fpeerIDField.value)
+            console.log("connecting to " + fpeerIDField.value)
             conn = peer.connect(fpeerIDField.value);
             console.log(conn)
             // open event called when connection gets created
@@ -65,10 +63,10 @@ export default function Home() {
 
         function sendMessage() {
             var msg = document.querySelector("#msg")
-            appendMessage("sending message")
+            console.log("sending message")
             // send message at sender or receiver side
             if (conn && conn.open) {
-                appendMessage("Me : " + msg.value)
+                setm("Me : " + msg.value)
                 conn.send(msg.value);
             }
         }
