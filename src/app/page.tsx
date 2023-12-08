@@ -77,10 +77,10 @@ export default function Home() {
     <p>{peerid}</p>
     <button onClick={join}>Join</button>
 
-    <input type="text" id="fpeerid" placeholder="Peer ID"/> 
+    <input className='bg-white text-black' type="text" id="fpeerid" placeholder="Peer ID"/> 
     <button onClick={connect}>Connect</button>
 
-    <input type="text" id="msg" placeholder="Message.."/>
+    <input className='bg-white text-black' type="text" id="msg" placeholder="Message.."/>
     <button id="send" onClick={sendMessage}>Send</button>
 
     <p>{messages}</p>
