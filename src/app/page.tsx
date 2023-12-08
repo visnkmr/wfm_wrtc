@@ -1,5 +1,5 @@
 "use client"
-import { DataConnection, Peer } from 'peerjs';
+import { DataConnection, LogLevel, Peer } from 'peerjs';
 import React, { useEffect } from 'react'
 
 export default function Home() {
@@ -7,10 +7,12 @@ export default function Home() {
   const [peerid,setpid] = React.useState("")
   const [messages,setm] = React.useState("")
   const [peer,setp] = React.useState<Peer>()
-  var conn:DataConnection;
+  const [conn,setconn] = React.useState<DataConnection>()
   //  function join() {
             useEffect(()=>{
-              const p = new Peer()
+              const p = new Peer({
+                debug: 3
+              })
               setp(p)
               
             },[])
@@ -25,7 +27,7 @@ export default function Home() {
               });
   
               peer.on('connection', function (c) {
-                  conn = c
+                  setconn(c)
                   console.log("New connection : ")
                   console.log(conn)
   
@@ -33,22 +35,25 @@ export default function Home() {
                   var fpeerIDField = document.querySelector("#fpeerid")
                   fpeerIDField.value = c.peer
   
-                  // handle message receive
-                  conn.on('open', function () {
-                      // Receive messages - receiver side
-                      conn.on('data', function (data) {
-                          console.log('Received', data);
-                          setm("Friend : " + data)
-                      });
-                  });
+                  
               });
           // }
+            }
+            if(conn){
+              // handle message receive
+              conn.on('open', function () {
+                // Receive messages - receiver side
+              });
+              conn.on('data', function (data) {
+                  console.log('Received', data);
+                  setm("Friend : " + data)
+              });
             }
 
         function connect() {
             var fpeerIDField = document.querySelector("#fpeerid")
             console.log("connecting to " + fpeerIDField.value)
-            conn = peer.connect(fpeerIDField.value);
+            setconn(peer.connect(fpeerIDField.value));
             console.log(conn)
             // open event called when connection gets created
             // conn.on('open', function () {
