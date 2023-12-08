@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect } from 'react'
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+// import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 
 
 import { useState } from 'react'
@@ -12,7 +12,7 @@ export default function Home() {
     const p = new Peer({
       initiator: false,
       trickle: false,
-      wrtc:nodeDatachannelPolyfill
+      // wrtc:nodeDatachannelPolyfill
     })
   useEffect(()=>{
 

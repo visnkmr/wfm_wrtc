@@ -1,17 +1,18 @@
 "use client"
 import React, { useEffect } from 'react'
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+// import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 
 import { useState } from 'react'
 import Peer from 'simple-peer'
+import { debug } from 'util';
 export default function Home() {
     const [sdp, setSdp] = useState('')
     const [peer, setPeer] = useState(null)
     const [showtext, setshowtext] = useState("")
     const p = new Peer({
-      initiator: true,
+      initiator: location.hash === '#1',
       trickle: false,
-      wrtc:nodeDatachannelPolyfill
+      // wrtc:nodeDatachannelPolyfill
     })
   useEffect(()=>{
 
@@ -42,7 +43,7 @@ export default function Home() {
         {/* <button onClick={handleConnect}>Connect</button> */}
         <br />
         {showtext}
-        <textarea value={sdp} onChange={(e) => setSdp(e.target.value)} />
+        <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
         <button onClick={handleJoin}>Join</button>
         <br />

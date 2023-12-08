@@ -11,6 +11,9 @@
       <textarea id="incoming"></textarea>
       <button type="submit">submit</button>
     </form>
+    <button onclick="runthis()">
+      click me
+    </button>
     <pre id="outgoing"></pre>
     <script src="simplepeer.min.js"></script>
     <script>
@@ -33,12 +36,16 @@
 
       p.on('connect', () => {
         console.log('CONNECT')
-        p.send('whatever' + Math.random())
+        runthis();
       })
 
       p.on('data', data => {
         console.log('data: ' + data)
       })
+
+      function runthis(){
+        p.send('whatever' + Math.random())
+      }
     </script>
   </body>
 </html>
