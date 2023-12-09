@@ -22,26 +22,20 @@ export default function Home() {
       setp(p)
     },[])
     
-  // useEffect(()=>{
-  if(peer){
-
-    peer.on('error', err => console.log('error', err))
-
-    peer.on('signal', data => {
-      console.log('SIGNAL', JSON.stringify(data))
-      setshowtext(JSON.stringify(data))
-    })
-    peer.on('connect', () => {
-      console.log('CONNECT')
-      
-    })
-    
-    // },[])
-  }
   var onDataHandlerSet=false;
   useEffect(() => {
     
     if (peer) {
+      peer.on('error', err => console.log('error', err))
+
+      peer.on('signal', data => {
+        console.log('SIGNAL', JSON.stringify(data))
+        setshowtext(JSON.stringify(data))
+      })
+      peer.on('connect', () => {
+        console.log('CONNECT')
+        
+      })
       // Check if 'data' event listener has already been set up
       if (!onDataHandlerSet) {
         peer.on('data', data => {
