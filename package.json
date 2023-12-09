@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@koush/wrtc": "^0.5.3",
+    "js-file-download": "^0.4.12",
     "next": "14.0.3",
     "node-datachannel": "^0.5.2",
     "node-loader": "^2.0.0",
