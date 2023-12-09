@@ -54,8 +54,8 @@ export default function Home() {
           
         })
         peer.on('data', data => {
-          console.log(peer)
-                    var gd=data as Data;
+          console.log(data)
+                    var gd=JSON.parse(data) as Data;
                     if (gd.dataType === DataType.FILE) {
                       console.log("recieved file")
                       download(gd.file || '', gd.fileName || "fileName", gd.fileType)
@@ -83,15 +83,22 @@ export default function Home() {
     var msg = document.querySelector("#msg")
     console.log("sending message")
     // send message at sender or receiver side
-    if (peer && peer.open) {
+    if (peer) {
+      console.log(JSON.stringify(
+        {
+        dataType:DataType.OTHER,
+        message: 
+        'whatever' + Math.random()
+
+      } as Data))
         // setm("Me : " + msg.value)
-        peer.send(
-          // {
-          // dataType:DataType.OTHER,
-          // message: 
+        peer.send(JSON.stringify(
+          {
+          dataType:DataType.OTHER,
+          message: 
           'whatever' + Math.random()
 
-        // } as Data
+        } as Data)
         );
         
     }
@@ -110,12 +117,12 @@ const handleUpload = async () => {
       let file = fileList[0] as unknown as File;
       let blob = new Blob([file], {type: file.type});
 
-      await peer.send({
+      await peer.send(JSON.stringify({
           dataType: DataType.FILE,
           file: blob,
           fileName: file.name,
           fileType: file.type
-      } as Data)
+      } as Data))
       await setSendLoading(false)
       console.log("Send file successfully")
   } catch (err) {
