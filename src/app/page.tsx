@@ -33,11 +33,26 @@ export default function Home() {
     })
     peer.on('connect', () => {
       console.log('CONNECT')
-      peer.send('whatever' + Math.random())
+      
     })
-
-  // },[])
+    
+    // },[])
   }
+  var onDataHandlerSet=false;
+  useEffect(() => {
+    
+    if (peer) {
+      // Check if 'data' event listener has already been set up
+      if (!onDataHandlerSet) {
+        peer.on('data', data => {
+          console.log('data: ' + data)
+        })
+   
+        // Mark 'data' event listener as set up
+        onDataHandlerSet = true;
+      }
+    }
+   }, [peer]);
   const handleJoin=() => {
     console.log(peer)
     peer.signal(JSON.parse(sdp))
@@ -45,14 +60,12 @@ export default function Home() {
 
 
   const handleSend=()=> {
-    
-    peer.on('data', data => {
-      console.log('data: ' + data)
-    })
+    peer.send('whatever' + Math.random())
+   
   }
   
     return (
-      <div>
+      <div className='grid grid-flow-row'>
         {/* <h1>Simple Next.js App</h1> */}
         {/* <button onClick={handleConnect}>Connect</button> */}
         <br />
