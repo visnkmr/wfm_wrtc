@@ -1,8 +1,8 @@
 'use client'
 import React, { useEffect } from 'react'
-// import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 import { useState } from 'react'
-import wrtc from "wrtc"
+// import wrtc from "wrtc"
 import Peer from 'simple-peer'
 import { debug } from 'util';
 export default function Sp() {
@@ -10,10 +10,10 @@ export default function Sp() {
     const [peer, setPeer] = useState(null)
     const [showtext, setshowtext] = useState("")
     const p = new Peer({
-      initiator: true,
+      initiator: location.hash === "#1",
       trickle: false,
-      wrtc: wrtc
-      // wrtc:nodeDatachannelPolyfill
+      // wrtc: wrtc
+      wrtc:nodeDatachannelPolyfill
     })
   useEffect(()=>{
 
