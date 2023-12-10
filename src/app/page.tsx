@@ -5,6 +5,7 @@ import { useState } from 'react'
 // import { createRequire } from 'module';
 import wrtc from "wrtc"
 import Peer from 'simple-peer'
+import Ably from "ably"
 import { debug } from 'util';
 import download from "js-file-download"
 export enum DataType {
@@ -20,6 +21,33 @@ export interface Data {
   message?: string
 }
 export default function Home() {
+// For the full code sample see here: https://github.com/ably/quickstart-js
+const ably = new Ably.Realtime.Promise("");
+useEffect(()=>{
+  const fetchData = async () => {
+    await ably.connection.once('connected');
+    console.log('Connected to Ably!');
+    // get the channel to subscribe to
+    const channel = ably.channels.get('quickstart');
+    /*
+      Subscribe to a channel.
+      The promise resolves when the channel is attached
+      (and resolves synchronously if the channel is already attached).
+    */
+    await channel.subscribe('greeting', (message) => {
+      console.log('Received a greeting message in realtime: ' + message.data)
+    });
+    ably.close()
+    // const data = await getData(1);
+    // setData(data);
+ }
+
+ fetchData();
+  // async ()=>{
+  // }
+},[])
+
+
   // const require = createRequire(import.meta.url);
   console.log(require)
     const [sdp, setSdp] = useState('')
