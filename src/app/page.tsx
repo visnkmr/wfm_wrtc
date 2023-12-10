@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { useState } from 'react'
 // import { createRequire } from 'module';
 import wrtc from "wrtc"
+
 import Peer from 'simple-peer'
 import Ably from "ably"
 import { debug } from 'util';
@@ -13,6 +14,8 @@ export enum DataType {
   OTHER = 'OTHER'
 
 }
+import { kv } from "@vercel/kv";
+
 export interface Data {
   dataType: DataType
   file?: Blob
@@ -21,10 +24,14 @@ export interface Data {
   message?: string
 }
 export default function Home() {
+  console.log(process.env)
 // For the full code sample see here: https://github.com/ably/quickstart-js
 const ably = new Ably.Realtime.Promise("");
 useEffect(()=>{
   const fetchData = async () => {
+    await kv.set("user_1_session", "session_token_value");
+    const session = await kv.get("user_1_session");
+    console.log(session)
     await ably.connection.once('connected');
     console.log('Connected to Ably!');
     // get the channel to subscribe to

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@koush/wrtc": "^0.5.3",
+    "@vercel/kv": "^1.0.1",
     "ably": "^1.2.48",
     "js-file-download": "^0.4.12",
     "next": "14.0.3",
