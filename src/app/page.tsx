@@ -7,13 +7,14 @@ import wrtc from "wrtc"
 
 import Peer from 'simple-peer'
 import Ably from "ably"
-import { debug } from 'util';
 import download from "js-file-download"
 export enum DataType {
   FILE = 'FILE',
   OTHER = 'OTHER'
 
 }
+import { v4 as uuidv4 } from 'uuid';
+
 import { kv,createClient } from "@vercel/kv";
 
 export interface Data {
@@ -29,52 +30,108 @@ export default function Home() {
     token: process.env.NEXT_PUBLIC_KV_REST_API_TOKEN!,
   });
 // For the full code sample see here: https://github.com/ably/quickstart-js
-const ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
-useEffect(()=>{
-  const fetchData = async () => {
-    await kv.set("user_1_session", "sadas");
-    const session = await kv.get("user_1_session");
-    console.log(session)
-    // await ably.connection.once('connected');
-    // console.log('Connected to Ably!');
-    // // get the channel to subscribe to
-    // const channel = ably.channels.get('quickstart');
-    // /*
-    //   Subscribe to a channel.
-    //   The promise resolves when the channel is attached
-    //   (and resolves synchronously if the channel is already attached).
-    // */
-    // await channel.subscribe('greeting', (message) => {
-    //   console.log('Received a greeting message in realtime: ' + message.data)
-    // });
-    // ably.close()
-    // const data = await getData(1);
-    // setData(data);
- }
 
- fetchData();
-  // async ()=>{
-  // }
-},[])
 
 
   // const require = createRequire(import.meta.url);
-  console.log(require)
+  // console.log(require)
     const [sdp, setSdp] = useState('')
+    const [channel, setchannel] = useState<Ably.Types.RealtimeChannelPromise>()
+    const [offer, setoffer] = useState('')
+    const [answer, setanswer] = useState('')
+    const [amitheinitiator, setinitiator] = useState(true)
     const [peer, setp] = useState<Peer>(null)
     const [showtext, setshowtext] = useState("")
     const [fileList, setFileList] = React.useState<[File]>([])
   const [sendLoading, setSendLoading] = React.useState(false)
     useEffect(()=>{
       const p = new Peer({
-      initiator: location.hash === "#1",
+      initiator: amitheinitiator,
       trickle: false,
       wrtc: wrtc
       // wrtc:nodeDatachannelPolyfill
     })
       setp(p)
-    },[])
-    
+    },[amitheinitiator])
+    const ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
+var onDataHandlerSetss = false;
+//once an offer is instantiated
+if(offer.trim().length!==0 ){
+
+  useEffect(()=>{
+    const fetchData = async () => {
+      if(!onDataHandlerSetss){
+        let ui4=uuidv4();
+        await kv.set(ui4, offer);
+        // console.log(uuidv4()); // Outputs a unique UUID
+        const session = await kv.get(ui4);
+        console.log(session)
+        setshowtext(ui4)
+        onDataHandlerSetss = true;
+        await ably.connection.once('connected');
+        console.log('Connected to Ably!');
+        // // get the channel to subscribe to
+        setchannel(ably.channels.get(ui4));
+        // /*
+        //   Subscribe to a channel.
+        //   The promise resolves when the channel is attached
+        //   (and resolves synchronously if the channel is already attached).
+        // */
+        //subscribe to know when answers are being sent
+        await channel.subscribe('answer', (message) => {
+          peer.signal(JSON.parse(message.data))
+          console.log('Received a greeting message in realtime: ' + message.data)
+        });
+        // ably.close()
+      }
+      // const data = await getData(1);
+      // setData(data);
+   }
+  
+   fetchData();
+    // async ()=>{
+    // }
+  },[offer])
+}
+//once decided on initiator
+if(sdp.trim().length!==0)
+{useEffect(()=>{
+  const fetchData = async () => {
+    var session;
+      try{
+        session = await kv.get(sdp);
+        setinitiator(false)
+        peer.signal(JSON.parse(session))
+        //ably join the channel of sdp and close this ones channel
+      setchannel(ably.channels.get(sdp));
+
+      }
+      catch(e){
+
+      }
+      
+      
+      // setshowtext(session)
+ }
+
+ fetchData();
+  // async ()=>{
+  // }
+},[sdp])}
+//send answer to initiator
+if(answer.trim().length!==0)
+{useEffect(()=>{
+  const fetchData = async () => {
+        //ably send the answer over the connection
+        await channel.publish('answer', answer);
+
+      // setshowtext(session)
+ }
+
+ fetchData();
+  // async ()=>{
+  // }
+},[answer])}
   var onDataHandlerSet=false;
   useEffect(() => {
     
@@ -85,7 +142,14 @@ useEffect(()=>{
 
         peer.on('signal', data => {
           console.log('SIGNAL', JSON.stringify(data))
-          setshowtext(JSON.stringify(data))
+          // setshowtext(JSON.stringify(data))
+          if(data.type==="offer"){
+            console.log("offer signal recieved")
+            setoffer(JSON.stringify(data))
+          }else if(data.type==="answer"){
+            console.log("answer signal recieved")
+            setanswer(JSON.stringify(data))
+          }
         })
         peer.on('connect', () => {
           console.log('CONNECT')
