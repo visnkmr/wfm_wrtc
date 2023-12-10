@@ -15,7 +15,7 @@ export enum DataType {
 }
 import { v4 as uuidv4 } from 'uuid';
 
-import { kv,createClient } from "@vercel/kv";
+import { createClient } from "@vercel/kv";
 
 export interface Data {
   dataType: DataType
@@ -25,7 +25,7 @@ export interface Data {
   message?: string
 }
 export default function Home() {
-  const kv = createClient({
+  const kvstore = createClient({
     url: process.env.NEXT_PUBLIC_KV_REST_API_URL!,
     token: process.env.NEXT_PUBLIC_KV_REST_API_TOKEN!,
   });
@@ -43,7 +43,7 @@ export default function Home() {
     const [peer, setp] = useState<Peer>(null)
     const [showtext, setshowtext] = useState("")
     const [fileList, setFileList] = React.useState<[File]>([])
-  const [sendLoading, setSendLoading] = React.useState(false)
+    const [sendLoading, setSendLoading] = React.useState(false)
     useEffect(()=>{
       const p = new Peer({
       initiator: amitheinitiator,
@@ -62,9 +62,9 @@ if(offer.trim().length!==0 ){
     const fetchData = async () => {
       if(!onDataHandlerSetss){
         let ui4=uuidv4();
-        await kv.set(ui4, offer);
+        await kvstore.set(ui4, offer);
         // console.log(uuidv4()); // Outputs a unique UUID
-        const session = await kv.get(ui4);
+        const session = await kvstore.get(ui4);
         console.log(session)
         setshowtext(ui4)
         onDataHandlerSetss = true;
