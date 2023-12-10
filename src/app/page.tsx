@@ -14,7 +14,7 @@ export enum DataType {
   OTHER = 'OTHER'
 
 }
-import { kv } from "@vercel/kv";
+import { kv,createClient } from "@vercel/kv";
 
 export interface Data {
   dataType: DataType
@@ -24,27 +24,30 @@ export interface Data {
   message?: string
 }
 export default function Home() {
-  console.log(process.env)
+  const kv = createClient({
+    url: process.env.NEXT_PUBLIC_KV_REST_API_URL!,
+    token: process.env.NEXT_PUBLIC_KV_REST_API_TOKEN!,
+  });
 // For the full code sample see here: https://github.com/ably/quickstart-js
-const ably = new Ably.Realtime.Promise("");
+const ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
 useEffect(()=>{
   const fetchData = async () => {
-    await kv.set("user_1_session", "session_token_value");
+    await kv.set("user_1_session", "sadas");
     const session = await kv.get("user_1_session");
     console.log(session)
-    await ably.connection.once('connected');
-    console.log('Connected to Ably!');
-    // get the channel to subscribe to
-    const channel = ably.channels.get('quickstart');
-    /*
-      Subscribe to a channel.
-      The promise resolves when the channel is attached
-      (and resolves synchronously if the channel is already attached).
-    */
-    await channel.subscribe('greeting', (message) => {
-      console.log('Received a greeting message in realtime: ' + message.data)
-    });
-    ably.close()
+    // await ably.connection.once('connected');
+    // console.log('Connected to Ably!');
+    // // get the channel to subscribe to
+    // const channel = ably.channels.get('quickstart');
+    // /*
+    //   Subscribe to a channel.
+    //   The promise resolves when the channel is attached
+    //   (and resolves synchronously if the channel is already attached).
+    // */
+    // await channel.subscribe('greeting', (message) => {
+    //   console.log('Received a greeting message in realtime: ' + message.data)
+    // });
+    // ably.close()
     // const data = await getData(1);
     // setData(data);
  }
