@@ -207,6 +207,7 @@ const getoffer=async()=>{
           })
           peer.on('connect', () => {
             console.log('CONNECT')
+            ably.close()
             
           })
           peer.on('data', data => {

@@ -1,3 +1,6 @@
+the concept:
+using simple-peer to send data (files,messages etc.) based on self implemented signalling server using vercel kv store (upstash based) and ably (websocket/similar long lived connection) for transfering answer between devices.
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
