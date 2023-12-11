@@ -14,7 +14,7 @@ const nextConfig = {
       //   serverComponentsExternalPackages: ["wrtc"],
       }
       ,
-      assetPrefix: '/',
+      // assetPrefix: '/',
         // resolve: {
         //   mainFields: ["browser", "module", "main"]
         // }
