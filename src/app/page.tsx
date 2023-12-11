@@ -36,153 +36,201 @@ export default function Home() {
   // const require = createRequire(import.meta.url);
   // console.log(require)
     const [sdp, setSdp] = useState('')
-    const [channel, setchannel] = useState<Ably.Types.RealtimeChannelPromise>()
-    const [offer, setoffer] = useState('')
-    const [answer, setanswer] = useState('')
-    const [amitheinitiator, setinitiator] = useState(true)
-    const [peer, setp] = useState<Peer>(null)
-    const [showtext, setshowtext] = useState("")
+    // const [channel, setchannel] = useState<Ably.Types.RealtimeChannelPromise>()
+    var channel:Ably.Types.RealtimeChannelPromise;
+    // const [offer, setoffer] = useState('')
+    // const [answer, setanswer] = useState('')
+    // const [amitheinitiator, setinitiator] = useState(true)
+    // const [peer, setp] = useState<Peer>(null)
+    var peer:Peer;
+    var ui4=""
+    // const [showtext, setshowtext] = useState("")
     const [fileList, setFileList] = React.useState<[File]>([])
     const [sendLoading, setSendLoading] = React.useState(false)
-    useEffect(()=>{
-      const p = new Peer({
+    const startconn=(amitheinitiator)=>{
+      // useEffect(()=>{
+      return new Peer({
       initiator: amitheinitiator,
       trickle: false,
       wrtc: wrtc
       // wrtc:nodeDatachannelPolyfill
     })
-      setp(p)
-    },[amitheinitiator])
-    const ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
+      // setp(p)
+    // },[amitheinitiator])
+  }
+  var ably;
+    const cably=async()=>{
+      ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
+    await ably.connection.once('connected');
+    console.log('Connected to Ably!');}
+cably()
+
 var onDataHandlerSetss = false;
 //once an offer is instantiated
-if(offer.trim().length!==0 ){
+// const offerset=(offer)=>{
 
-  useEffect(()=>{
-    const fetchData = async () => {
-      if(!onDataHandlerSetss){
-        let ui4=uuidv4();
-        await kvstore.set(ui4, offer);
-        // console.log(uuidv4()); // Outputs a unique UUID
-        const session = await kvstore.get(ui4);
-        console.log(session)
-        setshowtext(ui4)
-        onDataHandlerSetss = true;
-        await ably.connection.once('connected');
-        console.log('Connected to Ably!');
-        // // get the channel to subscribe to
-        setchannel(ably.channels.get(ui4));
-        // /*
-        //   Subscribe to a channel.
-        //   The promise resolves when the channel is attached
-        //   (and resolves synchronously if the channel is already attached).
-        // */
-        //subscribe to know when answers are being sent
-        await channel.subscribe('answer', (message) => {
-          peer.signal(JSON.parse(message.data))
-          console.log('Received a greeting message in realtime: ' + message.data)
-        });
-        // ably.close()
-      }
-      // const data = await getData(1);
-      // setData(data);
-   }
-  
-   fetchData();
-    // async ()=>{
-    // }
-  },[offer])
-}
-//once decided on initiator
-if(sdp.trim().length!==0)
-{useEffect(()=>{
-  const fetchData = async () => {
-    var session;
-      try{
-        session = await kv.get(sdp);
-        setinitiator(false)
-        peer.signal(JSON.parse(session))
-        //ably join the channel of sdp and close this ones channel
-      setchannel(ably.channels.get(sdp));
+//   // if(offer.trim().length!==0 ){
+//     console.log("setting offer on redis")
+    // useEffect(()=>{
+      const setofferdata = async (recdata) => {
+        // if(!onDataHandlerSetss){
+          let ui4=uuidv4();
+          // console.log(recdata)
+          await kvstore.set(ui4, recdata);
+          // console.log(uuidv4()); // Outputs a unique UUID
+          // const session = await kvstore.get(ui4);
+          // console.log(session)
+          console.log("initiator uid---->"+ui4)
+          console.log(ably)
+          // onDataHandlerSetss = true;
+          //  try{
+            
+            
+          // }
+          // catch(e){
+          //   console.log("FAILED")
+          //   console.log(e)
+          // }
+            console.log("initiator channel name "+ui4)
+            // // get the channel to subscribe to
+            channel=(ably.channels.get("abc"));
+            // /*
+            //   Subscribe to a channel.
+            //   The promise resolves when the channel is attached
+            //   (and resolves synchronously if the channel is already attached).
+            // */
+            //subscribe to know when answers are being sent
+            await channel.subscribe('answer', (message) => {
+              answerrecieved(message.data)
+              console.log('Received a greeting message in realtime: ' + message.data)
+            });
+          // ably.close()
+        // }
+        // const data = await getData(1);
+        // setData(data);
+     }
 
-      }
-      catch(e){
-
-      }
+     const answerrecieved=(answer)=>{
+              peer.signal(JSON.parse(answer))
       
-      
-      // setshowtext(session)
- }
-
- fetchData();
-  // async ()=>{
+     }
+    
+    //  fetchData(offer);
+      // async ()=>{
+      // }
+    // },[offer])
   // }
-},[sdp])}
-//send answer to initiator
-if(answer.trim().length!==0)
-{useEffect(()=>{
-  const fetchData = async () => {
+// }
+// //once decided on initiator
+// if(sdp.trim().length!==0)
+// {useEffect(()=>{
+//   const fetchData = async () => {
+//     var session;
+//       try{
+//         session = await kv.get(sdp);
+//         setinitiator(false)
+//         peer.signal(JSON.parse(session))
+//         //ably join the channel of sdp and close this ones channel
+//       setchannel(ably.channels.get(sdp));
+
+//       }
+//       catch(e){
+
+//       }
+      
+      
+//       // setshowtext(session)
+//  }
+
+//  fetchData();
+//   // async ()=>{
+//   // }
+// },[sdp])}
+// //send answer to initiator
+// if(answer.trim().length!==0)
+// {useEffect(()=>{
+  const setanswerdata = async (answer) => {
+    await ably.connection.once('connected');
+    console.log('Connected to Ably!');
+    console.log("reciever channel name "+ui4)
+    // // get the channel to subscribe to
+    channel=(ably.channels.get(ui4));
         //ably send the answer over the connection
-        await channel.publish('answer', answer);
+    await channel.publish('answer', answer);
 
       // setshowtext(session)
  }
+const getoffer=async()=>{
+  var offer=await kvstore.get(ui4);
+  console.log("got offer"+JSON.stringify(offer))
+    peer.signal(offer)
 
- fetchData();
-  // async ()=>{
-  // }
-},[answer])}
-  var onDataHandlerSet=false;
-  useEffect(() => {
-    
-    if (peer) {
-      // Check if 'data' event listener has already been set up
-      if (!onDataHandlerSet) {
-        peer.on('error', err => console.log('error', err))
+}
+//  fetchData();
+//   // async ()=>{
+//   // }
+// },[answer])}
+  // var onDataHandlerSet=false;
+  // useEffect(() => {
+    const initpeer=()=>{
 
-        peer.on('signal', data => {
-          console.log('SIGNAL', JSON.stringify(data))
-          // setshowtext(JSON.stringify(data))
-          if(data.type==="offer"){
-            console.log("offer signal recieved")
-            setoffer(JSON.stringify(data))
-          }else if(data.type==="answer"){
-            console.log("answer signal recieved")
-            setanswer(JSON.stringify(data))
-          }
-        })
-        peer.on('connect', () => {
-          console.log('CONNECT')
-          
-        })
-        peer.on('data', data => {
-          console.log(data)
-                    var gd=JSON.parse(data) as Data;
-                    if (gd.dataType === DataType.FILE) {
-                      console.log("recieved file")
-                      download(gd.file || '', gd.fileName || "fileName", gd.fileType)
-                  }
-                  else{
-    
-                    console.log('Received', gd.message);
-                    console.log('Received', JSON.stringify(gd));
-                    // setm("Friend : " + gd.message)
-                  }
-        })
-   
-        // Mark 'data' event listener as set up
-        onDataHandlerSet = true;
+      if (peer) {
+        // Check if 'data' event listener has already been set up
+        // if (!onDataHandlerSet) {
+          peer.on('error', err => console.log('error', err))
+  
+          peer.on('signal', data => {
+            let recdata=JSON.stringify(data)
+            console.log('SIGNAL', recdata)
+            // setshowtext(JSON.stringify(data))
+            if(data.type==="offer"){
+              console.log("offer signal recieved")
+              // console.log(recdata)
+              // setoffer(recdata)
+              // console.log(offer)
+              setofferdata(recdata)
+            }else if(data.type==="answer"){
+              console.log("answer signal recieved")
+              setanswerdata(recdata)
+            }
+          })
+          peer.on('connect', () => {
+            console.log('CONNECT')
+            
+          })
+          peer.on('data', data => {
+            console.log(data)
+                      var gd=JSON.parse(data) as Data;
+                      if (gd.dataType === DataType.FILE) {
+                        console.log("recieved file")
+                        download(gd.file || '', gd.fileName || "fileName", gd.fileType)
+                    }
+                    else{
+      
+                      console.log('Received', gd.message);
+                      // console.log('Received', JSON.stringify(gd));
+                      // setm("Friend : " + gd.message)
+                    }
+          })
+     
+          // Mark 'data' event listener as set up
+          // onDataHandlerSet = true;
+        // }
       }
+    //  }, [peer]);
     }
-   }, [peer]);
   const handleJoin=() => {
+    peer=startconn(false)
     console.log(peer)
-    peer.signal(JSON.parse(sdp))
+    initpeer()
+    // console.log("offer got from kvstore----->"+sdp)
+  
+    ui4=sdp
+    getoffer()
   }
 
 
   const sendMessage=()=> {
-    var msg = document.querySelector("#msg")
     console.log("sending message")
     // send message at sender or receiver side
     if (peer) {
@@ -238,8 +286,12 @@ const handleUpload = async () => {
       <div className='grid grid-flow-row'>
         {/* <h1>Simple Next.js App</h1> */}
         {/* <button onClick={handleConnect}>Connect</button> */}
+        <button onClick={()=>{
+          peer=startconn(true)
+          initpeer()
+          }}>start</button>
         <br />
-        {showtext}
+        {/* {showtext} */}
         <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
         <button onClick={handleJoin}>Join</button>
