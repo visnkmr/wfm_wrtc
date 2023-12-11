@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 // import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 import { useState } from 'react'
 // import { createRequire } from 'module';
-import wrtc from "wrtc"
+// import wrtc from "wrtc"
 
 import Peer from 'simple-peer'
 import Ably from "ably"
@@ -52,7 +52,7 @@ export default function Home() {
       return new Peer({
       initiator: amitheinitiator,
       trickle: false,
-      wrtc: wrtc
+      // wrtc: wrtc
       // wrtc:nodeDatachannelPolyfill
     })
       // setp(p)
