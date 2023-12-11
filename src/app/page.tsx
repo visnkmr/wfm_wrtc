@@ -59,11 +59,16 @@ export default function Home() {
     // },[amitheinitiator])
   }
   var ably;
-    const cably=async()=>{
+    const setupably=async()=>{
       ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
     await ably.connection.once('connected');
     console.log('Connected to Ably!');}
-cably()
+setupably()
+const setupchannel=()=>{
+  console.log("setup channel name "+ui4)
+
+  channel=(ably.channels.get(ui4));
+}
 
 var onDataHandlerSetss = false;
 //once an offer is instantiated
@@ -74,7 +79,7 @@ var onDataHandlerSetss = false;
     // useEffect(()=>{
       const setofferdata = async (recdata) => {
         // if(!onDataHandlerSetss){
-          let ui4=uuidv4();
+          ui4=uuidv4();
           // console.log(recdata)
           await kvstore.set(ui4, recdata);
           // console.log(uuidv4()); // Outputs a unique UUID
@@ -91,9 +96,8 @@ var onDataHandlerSetss = false;
           //   console.log("FAILED")
           //   console.log(e)
           // }
-            console.log("initiator channel name "+ui4)
             // // get the channel to subscribe to
-            channel=(ably.channels.get("abc"));
+            setupchannel()
             // /*
             //   Subscribe to a channel.
             //   The promise resolves when the channel is attached
@@ -111,7 +115,8 @@ var onDataHandlerSetss = false;
      }
 
      const answerrecieved=(answer)=>{
-              peer.signal(JSON.parse(answer))
+      console.log("answerr recieved--------->"+answer)
+              // peer.signal(JSON.parse(answer))
       
      }
     
@@ -150,11 +155,7 @@ var onDataHandlerSetss = false;
 // if(answer.trim().length!==0)
 // {useEffect(()=>{
   const setanswerdata = async (answer) => {
-    await ably.connection.once('connected');
-    console.log('Connected to Ably!');
-    console.log("reciever channel name "+ui4)
-    // // get the channel to subscribe to
-    channel=(ably.channels.get(ui4));
+    setupchannel()
         //ably send the answer over the connection
     await channel.publish('answer', answer);
 
@@ -219,13 +220,16 @@ const getoffer=async()=>{
       }
     //  }, [peer]);
     }
+    
   const handleJoin=() => {
     peer=startconn(false)
     console.log(peer)
     initpeer()
     // console.log("offer got from kvstore----->"+sdp)
-  
+    
     ui4=sdp
+    setupchannel()
+    
     getoffer()
   }
 
