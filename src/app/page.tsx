@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 // import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 import { useState } from 'react'
 // import { createRequire } from 'module';
@@ -8,7 +8,7 @@ import { useState } from 'react'
 import Peer from 'simple-peer'
 import Ably from "ably"
 import download from "js-file-download"
-export enum DataType {
+enum MessageTypeDesc {
   FILE = 'FILE',
   OTHER = 'OTHER'
 
@@ -17,8 +17,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { createClient } from "@vercel/kv";
 
-export interface Data {
-  dataType: DataType
+interface DataTypeDesc {
+  dataType: MessageTypeDesc
   file?: Blob
   fileName?: string
   fileType?: string
@@ -59,18 +59,18 @@ export default function Home() {
     // },[amitheinitiator])
   }
   var ably;
-  var runonce=false;
+  // var runonce=useRef(false);
     const setupably=async()=>{
       ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
     await ably.connection.once('connected');
     
     console.log('Connected to Ably!');}
     useEffect(()=>{
-      if(!runonce){
+      // if(!runonce.current){
 
         setupably()
-        runonce=true;
-      }
+        // runonce.current=true;
+      // }
     })
 
 const setupchannel=()=>{
@@ -212,8 +212,8 @@ const getoffer=async()=>{
           })
           peer.on('data', data => {
             console.log(data)
-                      var gd=JSON.parse(data) as Data;
-                      if (gd.dataType === DataType.FILE) {
+                      var gd=JSON.parse(data) as DataTypeDesc;
+                      if (gd.dataType === MessageTypeDesc.FILE) {
                         console.log("recieved file")
                         download(gd.file || '', gd.fileName || "fileName", gd.fileType)
                     }
@@ -251,11 +251,11 @@ const getoffer=async()=>{
     if (peer) {
       let sm=(JSON.stringify(
         {
-        dataType:DataType.OTHER,
+        dataType:MessageTypeDesc.OTHER,
         message: 
         'whatever' + Math.random()
 
-      } as Data))
+      } as DataTypeDesc))
         // setm("Me : " + msg.value)
         console.log(sm)
         peer.send(sm)
@@ -263,31 +263,34 @@ const getoffer=async()=>{
     }
 }
 const handleUpload = async () => {
-  if (fileList.length === 0) {
-      console.log("Please select file")
-      return
-  }
-  if (!peer) {
-      console.log("Please select a connection")
-      return
-  }
-  try {
-      await setSendLoading(true);
-      let file = fileList[0] as unknown as File;
-      let blob = new Blob([file], {type: file.type});
+  if(fileList){
 
-      await peer.send(JSON.stringify({
-          dataType: DataType.FILE,
-          file: blob,
-          fileName: file.name,
-          fileType: file.type
-      } as Data))
-      await setSendLoading(false)
-      console.log("Send file successfully")
-  } catch (err) {
-      await setSendLoading(false)
-      console.log(err)
-      console.log("Error when sending file")
+    if (fileList.length === 0) {
+        console.log("Please select file")
+        return
+    }
+    if (!peer) {
+        console.log("Please select a connection")
+        return
+    }
+    try {
+        await setSendLoading(true);
+        let file = fileList[0] as unknown as File;
+        let blob = new Blob([file], {type: file.type});
+  
+        await peer.send(JSON.stringify({
+            dataType: MessageTypeDesc.FILE,
+            file: blob,
+            fileName: file.name,
+            fileType: file.type
+        } as DataTypeDesc))
+        await setSendLoading(false)
+        console.log("Send file successfully")
+    } catch (err) {
+        await setSendLoading(false)
+        console.log(err)
+        console.log("Error when sending file")
+    }
   }
 }
   

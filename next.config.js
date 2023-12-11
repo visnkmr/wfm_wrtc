@@ -1,12 +1,13 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  // transpilePackages: ['crypto-js'],
     typescript: {
         ignoreBuildErrors: true,
       },
-      eslint: {
-        ignoreDuringBuilds: true,
-      },
+    //   eslint: {
+    //     ignoreDuringBuilds: true,
+    //   },
       experimental: {
         esmExternals: false,
         // legacyBrowsers: false,
@@ -14,14 +15,14 @@ const nextConfig = {
       //   serverComponentsExternalPackages: ["wrtc"],
       }
       ,
-      // assetPrefix: '/',
+      // assetPrefix: 'http://10.0.0.214:8080/',
         // resolve: {
         //   mainFields: ["browser", "module", "main"]
         // }
       // ,
       webpack: (config, { isServer }) => {
         // config.resolve.mainFields=["browser", "module", "main"]
-        config.externals.push("module");
+        // config.externals.push("module");
         // config.externals['module'] = 'commonjs node:module';
         // config.externals['node:path'] = 'commonjs node:path';
     
@@ -56,10 +57,11 @@ const nextConfig = {
         // }
     
         // Your added configuration
-        config.resolve.alias.canvas = false;
+        // config.resolve.alias.canvas = false;
     
         return config;
       },
+      output:"export"
       // externals: {
       //   "wrtc": "commonjs wrtc",
       // },
