@@ -116,7 +116,7 @@ var onDataHandlerSetss = false;
 
      const answerrecieved=(answer)=>{
       console.log("answerr recieved--------->"+answer)
-              // peer.signal(JSON.parse(answer))
+              peer.signal(JSON.parse(answer))
       
      }
     
