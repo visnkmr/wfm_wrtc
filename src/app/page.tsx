@@ -44,7 +44,7 @@ export default function Home() {
     // const [peer, setp] = useState<Peer>(null)
     var peer:Peer;
     var ui4=""
-    // const [showtext, setshowtext] = useState("")
+    const [showtext, setshowtext] = useState("")
     const [fileList, setFileList] = React.useState<[File]>([])
     const [sendLoading, setSendLoading] = React.useState(false)
     const startconn=(amitheinitiator)=>{
@@ -59,11 +59,20 @@ export default function Home() {
     // },[amitheinitiator])
   }
   var ably;
+  var runonce=false;
     const setupably=async()=>{
       ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
     await ably.connection.once('connected');
+    
     console.log('Connected to Ably!');}
-setupably()
+    useEffect(()=>{
+      if(!runonce){
+
+        setupably()
+        runonce=true;
+      }
+    })
+
 const setupchannel=()=>{
   console.log("setup channel name "+ui4)
 
@@ -80,6 +89,7 @@ var onDataHandlerSetss = false;
       const setofferdata = async (recdata) => {
         // if(!onDataHandlerSetss){
           ui4=uuidv4();
+          setshowtext(ui4)
           // console.log(recdata)
           await kvstore.set(ui4, recdata);
           // console.log(uuidv4()); // Outputs a unique UUID
@@ -238,7 +248,7 @@ const getoffer=async()=>{
     console.log("sending message")
     // send message at sender or receiver side
     if (peer) {
-      console.log(JSON.stringify(
+      let sm=(JSON.stringify(
         {
         dataType:DataType.OTHER,
         message: 
@@ -246,14 +256,8 @@ const getoffer=async()=>{
 
       } as Data))
         // setm("Me : " + msg.value)
-        peer.send(JSON.stringify(
-          {
-          dataType:DataType.OTHER,
-          message: 
-          'whatever' + Math.random()
-
-        } as Data)
-        );
+        console.log(sm)
+        peer.send(sm)
         
     }
 }
@@ -295,7 +299,7 @@ const handleUpload = async () => {
           initpeer()
           }}>start</button>
         <br />
-        {/* {showtext} */}
+        {showtext}
         <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
         <button onClick={handleJoin}>Join</button>
