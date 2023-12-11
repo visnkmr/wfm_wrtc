@@ -44,7 +44,7 @@ export default function Home() {
     // const [peer, setp] = useState<Peer>(null)
     var peer:Peer;
     var ui4=""
-    const [showtext, setshowtext] = useState("")
+    // const [showtext, setshowtext] = useState("")
     const [fileList, setFileList] = React.useState<[File]>([])
     const [sendLoading, setSendLoading] = React.useState(false)
     const startconn=(amitheinitiator)=>{
@@ -89,7 +89,7 @@ var onDataHandlerSetss = false;
       const setofferdata = async (recdata) => {
         // if(!onDataHandlerSetss){
           ui4=uuidv4();
-          setshowtext(ui4)
+          console.log(ui4)
           // console.log(recdata)
           await kvstore.set(ui4, recdata);
           // console.log(uuidv4()); // Outputs a unique UUID
@@ -300,7 +300,7 @@ const handleUpload = async () => {
           initpeer()
           }}>start</button>
         <br />
-        {showtext}
+        {/* {showtext} */}
         <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
         <button onClick={handleJoin}>Join</button>
