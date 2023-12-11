@@ -24,6 +24,13 @@ interface DataTypeDesc {
   fileType?: string
   message?: string
 }
+const de=false;
+const dlfd =(m)=>{
+  if(de){
+
+    console.log(m)
+  }
+}
 export default function Home() {
   const kvstore = createClient({
     url: process.env.NEXT_PUBLIC_KV_REST_API_URL!,
@@ -34,7 +41,7 @@ export default function Home() {
 
 
   // const require = createRequire(import.meta.url);
-  // console.log(require)
+  // dlfd(require)
     const [sdp, setSdp] = useState('')
     // const [channel, setchannel] = useState<Ably.Types.RealtimeChannelPromise>()
     var channel:Ably.Types.RealtimeChannelPromise;
@@ -64,7 +71,7 @@ export default function Home() {
       ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
     await ably.connection.once('connected');
     
-    console.log('Connected to Ably!');}
+    console.debug('Connected to Ably!');}
     useEffect(()=>{
       // if(!runonce.current){
 
@@ -74,7 +81,7 @@ export default function Home() {
     })
 
 const setupchannel=()=>{
-  console.log("setup channel name "+ui4)
+  dlfd("setup channel name "+ui4)
 
   channel=(ably.channels.get(ui4));
 }
@@ -84,27 +91,27 @@ var onDataHandlerSetss = false;
 // const offerset=(offer)=>{
 
 //   // if(offer.trim().length!==0 ){
-//     console.log("setting offer on redis")
+//     dlfd("setting offer on redis")
     // useEffect(()=>{
       const setofferdata = async (recdata) => {
         // if(!onDataHandlerSetss){
           ui4=uuidv4();
-          console.log(ui4)
-          // console.log(recdata)
+          dlfd(ui4)
+          // dlfd(recdata)
           await kvstore.set(ui4, recdata);
-          // console.log(uuidv4()); // Outputs a unique UUID
+          // dlfd(uuidv4()); // Outputs a unique UUID
           // const session = await kvstore.get(ui4);
-          // console.log(session)
-          console.log("initiator uid---->"+ui4)
-          console.log(ably)
+          // dlfd(session)
+          dlfd("initiator uid---->"+ui4)
+          dlfd(ably)
           // onDataHandlerSetss = true;
           //  try{
             
             
           // }
           // catch(e){
-          //   console.log("FAILED")
-          //   console.log(e)
+          //   dlfd("FAILED")
+          //   dlfd(e)
           // }
             // // get the channel to subscribe to
             setupchannel()
@@ -116,7 +123,7 @@ var onDataHandlerSetss = false;
             //subscribe to know when answers are being sent
             await channel.subscribe('answer', (message) => {
               answerrecieved(message.data)
-              console.log('Received a greeting message in realtime: ' + message.data)
+              dlfd('Received a greeting message in realtime: ' + message.data)
             });
           // ably.close()
         // }
@@ -125,7 +132,7 @@ var onDataHandlerSetss = false;
      }
 
      const answerrecieved=(answer)=>{
-      console.log("answerr recieved--------->"+answer)
+      dlfd("answerr recieved--------->"+answer)
               peer.signal(JSON.parse(answer))
       
      }
@@ -173,7 +180,7 @@ var onDataHandlerSetss = false;
  }
 const getoffer=async()=>{
   var offer=await kvstore.get(ui4);
-  console.log("got offer"+JSON.stringify(offer))
+  dlfd("got offer"+JSON.stringify(offer))
     peer.signal(offer)
 
 }
@@ -188,39 +195,39 @@ const getoffer=async()=>{
       if (peer) {
         // Check if 'data' event listener has already been set up
         // if (!onDataHandlerSet) {
-          peer.on('error', err => console.log('error', err))
+          peer.on('error', err => dlfd('error', err))
   
           peer.on('signal', data => {
             let recdata=JSON.stringify(data)
-            console.log('SIGNAL', recdata)
+            dlfd('SIGNAL', recdata)
             // setshowtext(JSON.stringify(data))
             if(data.type==="offer"){
-              console.log("offer signal recieved")
-              // console.log(recdata)
+              dlfd("offer signal recieved")
+              // dlfd(recdata)
               // setoffer(recdata)
-              // console.log(offer)
+              // dlfd(offer)
               setofferdata(recdata)
             }else if(data.type==="answer"){
-              console.log("answer signal recieved")
+              dlfd("answer signal recieved")
               setanswerdata(recdata)
             }
           })
           peer.on('connect', () => {
-            console.log('CONNECT')
+            dlfd('CONNECT')
             ably.close()
             
           })
           peer.on('data', data => {
-            console.log(data)
+            dlfd(data)
                       var gd=JSON.parse(data) as DataTypeDesc;
                       if (gd.dataType === MessageTypeDesc.FILE) {
-                        console.log("recieved file")
+                        dlfd("recieved file")
                         download(gd.file || '', gd.fileName || "fileName", gd.fileType)
                     }
                     else{
       
-                      console.log('Received', gd.message);
-                      // console.log('Received', JSON.stringify(gd));
+                      dlfd('Received', gd.message);
+                      // dlfd('Received', JSON.stringify(gd));
                       // setm("Friend : " + gd.message)
                     }
           })
@@ -234,9 +241,9 @@ const getoffer=async()=>{
     
   const handleJoin=() => {
     peer=startconn(false)
-    console.log(peer)
+    dlfd(peer)
     initpeer()
-    // console.log("offer got from kvstore----->"+sdp)
+    // dlfd("offer got from kvstore----->"+sdp)
     
     ui4=sdp
     setupchannel()
@@ -246,7 +253,7 @@ const getoffer=async()=>{
 
 
   const sendMessage=()=> {
-    console.log("sending message")
+    dlfd("sending message")
     // send message at sender or receiver side
     if (peer) {
       let sm=(JSON.stringify(
@@ -257,7 +264,7 @@ const getoffer=async()=>{
 
       } as DataTypeDesc))
         // setm("Me : " + msg.value)
-        console.log(sm)
+        dlfd(sm)
         peer.send(sm)
         
     }
@@ -266,11 +273,11 @@ const handleUpload = async () => {
   if(fileList){
 
     if (fileList.length === 0) {
-        console.log("Please select file")
+        dlfd("Please select file")
         return
     }
     if (!peer) {
-        console.log("Please select a connection")
+        dlfd("Please select a connection")
         return
     }
     try {
@@ -285,11 +292,11 @@ const handleUpload = async () => {
             fileType: file.type
         } as DataTypeDesc))
         await setSendLoading(false)
-        console.log("Send file successfully")
+        dlfd("Send file successfully")
     } catch (err) {
         await setSendLoading(false)
-        console.log(err)
-        console.log("Error when sending file")
+        dlfd(err)
+        dlfd("Error when sending file")
     }
   }
 }
