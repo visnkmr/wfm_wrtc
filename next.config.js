@@ -16,6 +16,7 @@ const nextConfig = {
       }
       ,
       // assetPrefix: 'http://10.0.0.214:8080/',
+      assetPrefix: '/',
         // resolve: {
         //   mainFields: ["browser", "module", "main"]
         // }
