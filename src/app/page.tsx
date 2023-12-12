@@ -8,7 +8,7 @@ import { useState } from 'react'
 import Peer from 'simple-peer'
 import Ably from "ably"
 import download from "js-file-download"
-enum MessageTypeDesc {
+export enum MessageTypeDesc {
   FILE = 'FILE',
   OTHER = 'OTHER'
 
@@ -16,16 +16,17 @@ enum MessageTypeDesc {
 import { v4 as uuidv4 } from 'uuid';
 
 import { createClient } from "@vercel/kv";
+import Fileup from '@/fileup'
 
-interface DataTypeDesc {
+export interface DataTypeDesc {
   dataType: MessageTypeDesc
   file?: Blob
   fileName?: string
   fileType?: string
   message?: string
 }
-const de=false;
-const dlfd =(m)=>{
+const de=true;
+export const dlfd =(m)=>{
   if(de){
 
     console.log(m)
@@ -49,11 +50,11 @@ export default function Home() {
     // const [answer, setanswer] = useState('')
     // const [amitheinitiator, setinitiator] = useState(true)
     // const [peer, setp] = useState<Peer>(null)
-    var peer:Peer;
+    var savepeer=useRef();
+    var peer:Peer=savepeer.current;
     var ui4=""
     // const [showtext, setshowtext] = useState("")
-    const [fileList, setFileList] = React.useState<[File]>([])
-    const [sendLoading, setSendLoading] = React.useState(false)
+   dlfd(peer)
     const startconn=(amitheinitiator)=>{
       // useEffect(()=>{
       return new Peer({
@@ -72,13 +73,13 @@ export default function Home() {
     await ably.connection.once('connected');
     
     console.debug('Connected to Ably!');}
-    useEffect(()=>{
+    // useEffect(()=>{
       // if(!runonce.current){
 
         setupably()
         // runonce.current=true;
       // }
-    })
+    // },[])
 
 const setupchannel=()=>{
   dlfd("setup channel name "+ui4)
@@ -195,11 +196,11 @@ const getoffer=async()=>{
       if (peer) {
         // Check if 'data' event listener has already been set up
         // if (!onDataHandlerSet) {
-          peer.on('error', err => dlfd('error', err))
+          peer.on('error', err => dlfd('error'+ err))
   
           peer.on('signal', data => {
             let recdata=JSON.stringify(data)
-            dlfd('SIGNAL', recdata)
+            dlfd('SIGNAL'+ recdata)
             // setshowtext(JSON.stringify(data))
             if(data.type==="offer"){
               dlfd("offer signal recieved")
@@ -210,6 +211,7 @@ const getoffer=async()=>{
             }else if(data.type==="answer"){
               dlfd("answer signal recieved")
               setanswerdata(recdata)
+              dlfd((peer))
             }
           })
           peer.on('connect', () => {
@@ -226,7 +228,7 @@ const getoffer=async()=>{
                     }
                     else{
       
-                      dlfd('Received', gd.message);
+                      dlfd('Received'+ gd.message);
                       // dlfd('Received', JSON.stringify(gd));
                       // setm("Friend : " + gd.message)
                     }
@@ -240,8 +242,9 @@ const getoffer=async()=>{
     }
     
   const handleJoin=() => {
-    peer=startconn(false)
-    dlfd(peer)
+    savepeer.current=startconn(false)
+    peer=savepeer.current
+    dlfd(JSON.stringify(peer))
     initpeer()
     // dlfd("offer got from kvstore----->"+sdp)
     
@@ -269,44 +272,58 @@ const getoffer=async()=>{
         
     }
 }
-const handleUpload = async () => {
-  if(fileList){
-
-    if (fileList.length === 0) {
-        dlfd("Please select file")
-        return
-    }
-    if (!peer) {
-        dlfd("Please select a connection")
-        return
-    }
-    try {
-        await setSendLoading(true);
-        let file = fileList[0] as unknown as File;
-        let blob = new Blob([file], {type: file.type});
-  
-        await peer.send(JSON.stringify({
-            dataType: MessageTypeDesc.FILE,
-            file: blob,
-            fileName: file.name,
-            fileType: file.type
-        } as DataTypeDesc))
-        await setSendLoading(false)
-        dlfd("Send file successfully")
-    } catch (err) {
-        await setSendLoading(false)
-        dlfd(err)
-        dlfd("Error when sending file")
-    }
-  }
-}
+const [fileList, setFileList] = React.useState<[File]>([])
+    const [sendLoading, setSendLoading] = React.useState(false)
+    const handleUpload = async () => {
+        if(fileList){
+      
+          if (fileList.length === 0) {
+              dlfd("Please select file")
+              return
+          }
+          dlfd(peer)
+          if (!peer) {
+              dlfd("Please select a connection")
+              return
+          }
+          try {
+              await setSendLoading(true);
+              let file = fileList[0] as unknown as File;
+              let blob = new Blob([file], {type: file.type});
+        
+              await peer.send(JSON.stringify({
+                  dataType: MessageTypeDesc.FILE,
+                  file: blob,
+                  fileName: file.name,
+                  fileType: file.type
+              } as DataTypeDesc))
+              await setSendLoading(false)
+              dlfd("Send file successfully")
+          } catch (err) {
+              await setSendLoading(false)
+              dlfd(err)
+              dlfd("Error when sending file")
+          }
+        }
+      }
+        const addfile=(event) => {
+          console.log(peer)
+          event.preventDefault();
+          const file = event.target.files[0];
+          if (file) {
+            setFileList([file]);
+          } else {
+            setFileList([]);
+          }
+        }
   
     return (
       <div className='grid grid-flow-row'>
         {/* <h1>Simple Next.js App</h1> */}
         {/* <button onClick={handleConnect}>Connect</button> */}
         <button onClick={()=>{
-          peer=startconn(true)
+          savepeer.current=startconn(true)
+          peer=savepeer.current
           initpeer()
           }}>start</button>
         <br />
@@ -317,25 +334,19 @@ const handleUpload = async () => {
         <br />
         <button onClick={sendMessage}>Send</button>
         <br />
+        {/* <Fileup peer={savepeer.current}/> */}
         <input
-      type="file"
-      onChange={(event) => {
-        const file = event.target.files[0];
-        if (file) {
-          setFileList([file]);
-        } else {
-          setFileList([]);
-        }
-      }}
-    />
-    <button
-      onClick={handleUpload}
-      // loading={sendLoading}
-      disabled={fileList.length === 0}
-      style={{ marginTop: 16 }}
-    >
-      {sendLoading ? "Sending" : "Send"}
-    </button>
+          type="file"
+          onChange={addfile}
+        />
+        <button
+          onClick={handleUpload}
+          // loading={sendLoading}
+          disabled={fileList.length === 0}
+          style={{ marginTop: 16 }}
+        >
+          {sendLoading ? "Sending" : "Send"}
+        </button>
       </div>
     )
     // return (
