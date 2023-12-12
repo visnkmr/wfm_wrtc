@@ -25,7 +25,7 @@ export interface DataTypeDesc {
   fileType?: string
   message?: string
 }
-const de=true;
+const de=process.env.NEXT_PUBLIC_LOG_SHOW!;
 export const dlfd =(m)=>{
   if(de){
 
