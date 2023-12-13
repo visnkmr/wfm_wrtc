@@ -1,17 +1,74 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
+import axios from "axios";
+import './src/app/globals.css'
+
 // import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 import { useState } from 'react'
 // import { createRequire } from 'module';
 // import wrtc from "wrtc"
 
 import Peer from 'simple-peer'
-import Ably from "ably"
+// import Ably from "ably"
 import download from "js-file-download"
 export enum MessageTypeDesc {
   FILE = 'FILE',
   OTHER = 'OTHER'
 
+}
+function submittodb(id:string,listtosave:object){
+  console.log("whenhere:\n"+JSON.stringify(listtosave))
+
+  return axios.request({
+    url: `https://listallfrompscale.vercel.app/api/putredis/`,
+    method: 'POST',
+    data: {id: id, value: JSON.stringify(listtosave)},
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+})
+// .then(response => {
+//   console.log(response)
+//       // value="\nsaved selected tab(s)\t";
+//       // +title.substring(0,30);
+//       // response.json()
+//     }
+//   )
+// // .then(data => {
+// //     // Do something with the response data
+// //     console.log(data);
+// // })
+// .catch(error => {
+//     // Handle any errors
+//     console.error(error);
+// });
+}
+function getfromdb(id:string){
+  // console.log("whenhere:\n"+JSON.stringify(listtosave))
+
+   axios.request({
+    url: `https://listallfrompscale.vercel.app/api/getvalue/${id}`,
+    method: 'GET',
+    // data: {id: id, value: JSON.stringify(listtosave)},
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+})
+.then(response => {
+  console.log(response)
+      // value="\nsaved selected tab(s)\t";
+      // +title.substring(0,30);
+      // response.json()
+    }
+  )
+// .then(data => {
+//     // Do something with the response data
+//     console.log(data);
+// })
+.catch(error => {
+    // Handle any errors
+    console.error(error);
+});
 }
 import { v4 as uuidv4 } from 'uuid';
 
@@ -25,10 +82,10 @@ export interface DataTypeDesc {
   message?: string
 }
 
-export default function Hpage({ably,kvstore,dlfd}){
+export default function Hpage({dlfd}){
     const [sdp, setSdp] = useState('')
     // const [channel, setchannel] = useState<Ably.Types.RealtimeChannelPromise>()
-    var channel:Ably.Types.RealtimeChannelPromise;
+    // var channel:Ably.Types.RealtimeChannelPromise;
     // const [offer, setoffer] = useState('')
     // const [answer, setanswer] = useState('')
     // const [amitheinitiator, setinitiator] = useState(true)
@@ -54,11 +111,11 @@ export default function Hpage({ably,kvstore,dlfd}){
       // }
     // },[])
 
-const setupchannel=()=>{
-  dlfd("setup channel name "+ui4)
+// const setupchannel=()=>{
+//   dlfd("setup channel name "+ui4)
 
-  channel=(ably.channels.get(ui4));
-}
+//   channel=(ably.channels.get(ui4));
+// }
 
 var onDataHandlerSetss = false;
 //once an offer is instantiated
@@ -72,12 +129,13 @@ var onDataHandlerSetss = false;
           ui4=uuidv4();
           dlfd(ui4)
           // dlfd(recdata)
-          await kvstore.set(ui4, recdata);
+          await submittodb(ui4, recdata);
+          await getoffer()
           // dlfd(uuidv4()); // Outputs a unique UUID
           // const session = await kvstore.get(ui4);
           // dlfd(session)
           dlfd("initiator uid---->"+ui4)
-          dlfd(ably)
+          // dlfd(ably)
           // onDataHandlerSetss = true;
           //  try{
             
@@ -88,17 +146,17 @@ var onDataHandlerSetss = false;
           //   dlfd(e)
           // }
             // // get the channel to subscribe to
-            setupchannel()
+            // setupchannel()
             // /*
             //   Subscribe to a channel.
             //   The promise resolves when the channel is attached
             //   (and resolves synchronously if the channel is already attached).
             // */
             //subscribe to know when answers are being sent
-            await channel.subscribe('answer', (message) => {
-              answerrecieved(message.data)
-              dlfd('Received a greeting message in realtime: ' + message.data)
-            });
+            // await channel.subscribe('answer', (message) => {
+            //   answerrecieved(message.data)
+            //   dlfd('Received a greeting message in realtime: ' + message.data)
+            // });
           // ably.close()
         // }
         // const data = await getData(1);
@@ -146,16 +204,17 @@ var onDataHandlerSetss = false;
 // if(answer.trim().length!==0)
 // {useEffect(()=>{
   const setanswerdata = async (answer) => {
-    setupchannel()
+    // setupchannel()
         //ably send the answer over the connection
-    await channel.publish('answer', answer);
+    // await channel.publish('answer', answer);
 
       // setshowtext(session)
  }
 const getoffer=async()=>{
-  var offer=await kvstore.get(ui4);
+  console.log(ui4)
+  var offer=await getfromdb(ui4);
   dlfd("got offer"+JSON.stringify(offer))
-    peer.signal(offer)
+    // peer.signal(offer)
 
 }
 //  fetchData();
@@ -189,7 +248,7 @@ const getoffer=async()=>{
           })
           peer.on('connect', () => {
             dlfd('CONNECT')
-            ably.close()
+            // ably.close()
             
           })
           peer.on('data', data => {
@@ -222,7 +281,7 @@ const getoffer=async()=>{
     // dlfd("offer got from kvstore----->"+sdp)
     
     ui4=sdp
-    setupchannel()
+    // setupchannel()
     
     getoffer()
   }

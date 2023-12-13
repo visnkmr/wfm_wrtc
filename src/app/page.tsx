@@ -1,13 +1,15 @@
 'use client'
-import React, { useEffect, useRef } from 'react'
+// import React, { useEffect, useRef } from 'react'
+
 // import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
-import { useState } from 'react'
+// import { useState } from 'react'
+
 // import { createRequire } from 'module';
 // import wrtc from "wrtc"
 
-import Peer from 'simple-peer'
-import Ably from "ably"
-import download from "js-file-download"
+// import Peer from 'simple-peer'
+// import Ably from "ably"
+// import download from "js-file-download"
 export enum MessageTypeDesc {
   FILE = 'FILE',
   OTHER = 'OTHER'
@@ -32,22 +34,23 @@ export const dlfd =(m)=>{
     console.log(m)
   }
 }
-export default function Home() {
-  const kvstore = createClient({
-    url: process.env.NEXT_PUBLIC_KV_REST_API_URL!,
-    token: process.env.NEXT_PUBLIC_KV_REST_API_TOKEN!,
-  });
-  var ably;
-  // var runonce=useRef(false);
-    const setupably=async()=>{
-      ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
-    await ably.connection.once('connected');
-    
-    console.debug('Connected to Ably!');}
-    // useEffect(()=>{
-      // if(!runonce.current){
 
-        setupably()
+export default function Home() {
+  // const kvstore = createClient({
+  //   url: process.env.NEXT_PUBLIC_KV_REST_API_URL!,
+  //   token: process.env.NEXT_PUBLIC_KV_REST_API_TOKEN!,
+  // });
+  // var ably;
+  // // var runonce=useRef(false);
+  //   const setupably=async()=>{
+  //     ably = new Ably.Realtime.Promise(process.env.NEXT_PUBLIC_ABLY_K as string);
+  //   await ably.connection.once('connected');
+    
+  //   console.debug('Connected to Ably!');}
+  //   // useEffect(()=>{
+  //     // if(!runonce.current){
+
+  //       setupably()
 // For the full code sample see here: https://github.com/ably/quickstart-js
 
 
@@ -56,7 +59,7 @@ export default function Home() {
   // dlfd(require)
     
     return (
-      <Hpage ably={ably} kvstore={kvstore} dlfd={dlfd}/>
+      <Hpage dlfd={dlfd}/>
     )
   
 }

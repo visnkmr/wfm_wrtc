@@ -9,8 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@vercel/kv": "^1.0.1",
-    "ably": "^1.2.48",
+    "axios": "^1.6.2",
     "js-file-download": "^0.4.12",
     "next": "14.0.1",
     "node-datachannel": "^0.5.2",
