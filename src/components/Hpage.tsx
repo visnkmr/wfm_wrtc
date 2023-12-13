@@ -70,9 +70,9 @@ function getfromdb(id:string){
 //     console.error(error);
 // });
 }
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 
-import { createClient } from "@vercel/kv";
+// import { createClient } from "@vercel/kv";
 
 export interface DataTypeDesc {
   dataType: MessageTypeDesc
@@ -97,6 +97,10 @@ export default function Hpage(){
     // const [amitheinitiator, setinitiator] = useState(true)
     // const [peer, setp] = useState<Peer>(null)
     var savepeer=useRef();
+    var showornot=useRef(false)
+    var [readyforconn,setr]=useState(false)
+    var [readytosend,setrts]=useState(false)
+    var [joinoth,setjoth]=useState(false)
     var peer:Peer=savepeer.current;
     var saveui4=useRef("");
     // var ui4=saveui4.current;
@@ -139,6 +143,7 @@ export default function Hpage(){
           dlfd(saveui4.current)
           // dlfd(recdata)
           await submittodb(saveui4.current, recdata);
+          showornot.current=true
           // await getoffer()
           // dlfd(uuidv4()); // Outputs a unique UUID
           // const session = await kvstore.get(ui4);
@@ -214,8 +219,10 @@ export default function Hpage(){
 // if(answer.trim().length!==0)
 // {useEffect(()=>{
   const setanswerdata = async (answer) => {
-    dlfd("sent answer to db")
     await submittodb(saveui4.current, answer);
+    dlfd("sent answer to db")
+    setr(true)
+    console.log(readyforconn)
     // setupchannel()
         //ably send the answer over the connection
     // await channel.publish('answer', answer);
@@ -280,6 +287,8 @@ var response = await resp;
           })
           peer.on('connect', () => {
             dlfd('CONNECT')
+            setrts(true)
+
             // ably.close()
             
           })
@@ -336,7 +345,10 @@ var response = await resp;
         
     }
 }
-var showornot=false
+const joinothenable=()=>{
+  setjoth(true)
+}
+
 const [fileList, setFileList] = React.useState<[File]>([])
     const [sendLoading, setSendLoading] = React.useState(false)
     const handleUpload = async () => {
@@ -386,20 +398,32 @@ const [fileList, setFileList] = React.useState<[File]>([])
       <div className='grid grid-flow-row'>
         {/* <h1>Simple Next.js App</h1> */}
         {/* <button onClick={handleConnect}>Connect</button> */}
+        <div className='grid grid-flow-col'>
+
         <button onClick={()=>{
           savepeer.current=startconn(true)
           peer=savepeer.current
           initpeer()
-          }}>start</button>
+        }}>Start Session</button>
+        <br/>
+        <button onClick={joinothenable}>Join Session </button>
+        </div>
         <br />
         {showtext}
         <br />
-        <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
+        <div className={joinoth ? "block" : "hidden"}>
+
+        <textarea placeholder="Enter code here" className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
-        <button onClick={handleJoin}>Join</button>
+        <button onClick={handleJoin}>Join Session</button>
+        </div>
         <br />
-        <button className={showornot ? "block" : "hidden"} onClick={getanswer}>Get Answer</button>
+        <div className={readyforconn ? "block" : "hidden"}>Ready for Connection</div>
         <br />
+        <button className={showornot.current ? "block" : "hidden"} onClick={getanswer}>Connect</button>
+        <br />
+        <div className={readytosend ? "block" : "hidden"}>
+
         <button onClick={sendMessage}>Send</button>
         <br />
         {/* <Fileup peer={savepeer.current}/> */}
@@ -415,6 +439,7 @@ const [fileList, setFileList] = React.useState<[File]>([])
         >
           {sendLoading ? "Sending" : "Send"}
         </button>
+        </div>
       </div>
     )
 }
