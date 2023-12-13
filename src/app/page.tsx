@@ -15,9 +15,11 @@ export enum MessageTypeDesc {
   OTHER = 'OTHER'
 
 }
-import { v4 as uuidv4 } from 'uuid';
+import './globals.css'
 
-import { createClient } from "@vercel/kv";
+// import { v4 as uuidv4 } from 'uuid';
+
+// import { createClient } from "@vercel/kv";
 import Hpage from '../../Hpage'
 
 export interface DataTypeDesc {
@@ -27,13 +29,7 @@ export interface DataTypeDesc {
   fileType?: string
   message?: string
 }
-const de=process.env.NEXT_PUBLIC_LOG_SHOW!;
-export const dlfd =(m)=>{
-  if(de){
 
-    console.log(m)
-  }
-}
 
 export default function Home() {
   // const kvstore = createClient({
@@ -59,7 +55,7 @@ export default function Home() {
   // dlfd(require)
     
     return (
-      <Hpage dlfd={dlfd}/>
+      <Hpage />
     )
   
 }

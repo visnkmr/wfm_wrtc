@@ -46,7 +46,7 @@ function submittodb(id:string,listtosave:object){
 function getfromdb(id:string){
   // console.log("whenhere:\n"+JSON.stringify(listtosave))
 
-   axios.request({
+   return axios.request({
     url: `https://listallfrompscale.vercel.app/api/getvalue/${id}`,
     method: 'GET',
     // data: {id: id, value: JSON.stringify(listtosave)},
@@ -54,21 +54,21 @@ function getfromdb(id:string){
       'Content-Type': 'application/x-www-form-urlencoded'
     }
 })
-.then(response => {
-  console.log(response)
-      // value="\nsaved selected tab(s)\t";
-      // +title.substring(0,30);
-      // response.json()
-    }
-  )
+// .then(response => {
+//   console.log(JSON.parse(response.data.data))
+//       // value="\nsaved selected tab(s)\t";
+//       // +title.substring(0,30);
+//       // response.json()
+//     }
+//   )
 // .then(data => {
 //     // Do something with the response data
 //     console.log(data);
 // })
-.catch(error => {
-    // Handle any errors
-    console.error(error);
-});
+// .catch(error => {
+//     // Handle any errors
+//     console.error(error);
+// });
 }
 import { v4 as uuidv4 } from 'uuid';
 
@@ -81,8 +81,14 @@ export interface DataTypeDesc {
   fileType?: string
   message?: string
 }
+const de=true;
+export const dlfd =(m)=>{
+  if(de){
 
-export default function Hpage({dlfd}){
+    console.log(m)
+  }
+}
+export default function Hpage(){
     const [sdp, setSdp] = useState('')
     // const [channel, setchannel] = useState<Ably.Types.RealtimeChannelPromise>()
     // var channel:Ably.Types.RealtimeChannelPromise;
@@ -117,7 +123,7 @@ export default function Hpage({dlfd}){
 //   channel=(ably.channels.get(ui4));
 // }
 
-var onDataHandlerSetss = false;
+// var onDataHandlerSetss = false;
 //once an offer is instantiated
 // const offerset=(offer)=>{
 
@@ -130,7 +136,7 @@ var onDataHandlerSetss = false;
           dlfd(ui4)
           // dlfd(recdata)
           await submittodb(ui4, recdata);
-          await getoffer()
+          // await getoffer()
           // dlfd(uuidv4()); // Outputs a unique UUID
           // const session = await kvstore.get(ui4);
           // dlfd(session)
@@ -163,11 +169,11 @@ var onDataHandlerSetss = false;
         // setData(data);
      }
 
-     const answerrecieved=(answer)=>{
-      dlfd("answerr recieved--------->"+answer)
-              peer.signal(JSON.parse(answer))
+    //  const answerrecieved=(answer)=>{
+    //   dlfd("answerr recieved--------->"+answer)
+    //           peer.signal(JSON.parse(answer))
       
-     }
+    //  }
     
     //  fetchData(offer);
       // async ()=>{
@@ -204,6 +210,8 @@ var onDataHandlerSetss = false;
 // if(answer.trim().length!==0)
 // {useEffect(()=>{
   const setanswerdata = async (answer) => {
+    dlfd("sent answer to db")
+    await submittodb(ui4, answer);
     // setupchannel()
         //ably send the answer over the connection
     // await channel.publish('answer', answer);
@@ -212,8 +220,28 @@ var onDataHandlerSetss = false;
  }
 const getoffer=async()=>{
   console.log(ui4)
-  var offer=await getfromdb(ui4);
-  dlfd("got offer"+JSON.stringify(offer))
+  var resp=await getfromdb(ui4);
+
+// Wait for the axios request to complete
+var response = await resp;
+
+// Access the data property of the response
+  var offer = response.data.data;
+  dlfd("got offer"+JSON.parse(offer))
+    peer.signal(JSON.parse(offer))
+
+}
+const getanswer=async()=>{
+  console.log(ui4)
+  var resp=await getfromdb(ui4);
+
+// Wait for the axios request to complete
+var response = await resp;
+
+// Access the data property of the response
+  var answer = response.data.data;
+  dlfd("answerr recieved--------->"+answer)
+  peer.signal(JSON.parse(answer))
     // peer.signal(offer)
 
 }
@@ -363,6 +391,8 @@ const [fileList, setFileList] = React.useState<[File]>([])
         <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
         <button onClick={handleJoin}>Join</button>
+        <br />
+        <button onClick={getanswer}>Get Answer</button>
         <br />
         <button onClick={sendMessage}>Send</button>
         <br />
