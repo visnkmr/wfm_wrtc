@@ -1,0 +1,11 @@
+{
+    "git": {
+      "deploymentEnabled": {
+        "main": false,
+        "sep_mods_pscaledb": true,
+        "sep_mods": false,
+        "sp_egfiletransfer":false,
+        "spndc":false
+      }
+    }
+   }
