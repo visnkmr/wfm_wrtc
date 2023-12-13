@@ -20,7 +20,7 @@ import './globals.css'
 // import { v4 as uuidv4 } from 'uuid';
 
 // import { createClient } from "@vercel/kv";
-import Hpage from '../../Hpage'
+import Hpage from '../components/Hpage'
 
 export interface DataTypeDesc {
   dataType: MessageTypeDesc
