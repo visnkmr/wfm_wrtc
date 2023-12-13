@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
 import axios from "axios";
-import './src/app/globals.css'
+// import './src/app/globals.css'
 
 // import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 import { useState } from 'react'
@@ -98,9 +98,10 @@ export default function Hpage(){
     // const [peer, setp] = useState<Peer>(null)
     var savepeer=useRef();
     var peer:Peer=savepeer.current;
-    var ui4=""
-    // const [showtext, setshowtext] = useState("")
-   dlfd(peer)
+    var saveui4=useRef("");
+    // var ui4=saveui4.current;
+    const [showtext, setshowtext] = useState("")
+  //  dlfd(peer)
     const startconn=(amitheinitiator)=>{
       // useEffect(()=>{
       return new Peer({
@@ -132,15 +133,18 @@ export default function Hpage(){
     // useEffect(()=>{
       const setofferdata = async (recdata) => {
         // if(!onDataHandlerSetss){
-          ui4=uuidv4();
-          dlfd(ui4)
+          let randomNumber = Math.floor(Date.now() % 10000);
+          console.log(randomNumber);
+          saveui4.current=randomNumber.toString();
+          dlfd(saveui4.current)
           // dlfd(recdata)
-          await submittodb(ui4, recdata);
+          await submittodb(saveui4.current, recdata);
           // await getoffer()
           // dlfd(uuidv4()); // Outputs a unique UUID
           // const session = await kvstore.get(ui4);
           // dlfd(session)
-          dlfd("initiator uid---->"+ui4)
+          setshowtext(saveui4.current)
+          dlfd("initiator uid---->"+saveui4.current)
           // dlfd(ably)
           // onDataHandlerSetss = true;
           //  try{
@@ -211,7 +215,7 @@ export default function Hpage(){
 // {useEffect(()=>{
   const setanswerdata = async (answer) => {
     dlfd("sent answer to db")
-    await submittodb(ui4, answer);
+    await submittodb(saveui4.current, answer);
     // setupchannel()
         //ably send the answer over the connection
     // await channel.publish('answer', answer);
@@ -219,8 +223,8 @@ export default function Hpage(){
       // setshowtext(session)
  }
 const getoffer=async()=>{
-  console.log(ui4)
-  var resp=await getfromdb(ui4);
+  console.log(saveui4.current)
+  var resp=await getfromdb(saveui4.current);
 
 // Wait for the axios request to complete
 var response = await resp;
@@ -232,8 +236,8 @@ var response = await resp;
 
 }
 const getanswer=async()=>{
-  console.log(ui4)
-  var resp=await getfromdb(ui4);
+  console.log(saveui4.current)
+  var resp=await getfromdb(saveui4.current);
 
 // Wait for the axios request to complete
 var response = await resp;
@@ -308,7 +312,7 @@ var response = await resp;
     initpeer()
     // dlfd("offer got from kvstore----->"+sdp)
     
-    ui4=sdp
+    saveui4.current=sdp
     // setupchannel()
     
     getoffer()
@@ -332,6 +336,7 @@ var response = await resp;
         
     }
 }
+var showornot=false
 const [fileList, setFileList] = React.useState<[File]>([])
     const [sendLoading, setSendLoading] = React.useState(false)
     const handleUpload = async () => {
@@ -387,12 +392,13 @@ const [fileList, setFileList] = React.useState<[File]>([])
           initpeer()
           }}>start</button>
         <br />
-        {/* {showtext} */}
+        {showtext}
+        <br />
         <textarea className='bg-black text-white' value={sdp} onChange={(e) => setSdp(e.target.value)} />
         <br />
         <button onClick={handleJoin}>Join</button>
         <br />
-        <button onClick={getanswer}>Get Answer</button>
+        <button className={showornot ? "block" : "hidden"} onClick={getanswer}>Get Answer</button>
         <br />
         <button onClick={sendMessage}>Send</button>
         <br />
