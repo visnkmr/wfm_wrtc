@@ -74,7 +74,7 @@ function getfromdb(id:string){
 
 // import { createClient } from "@vercel/kv";
 
-export interface DataTypeDesc {
+interface DataTypeDesc {
   dataType: MessageTypeDesc
   file?: Blob
   fileName?: string
@@ -111,6 +111,8 @@ export default function Hpage(){
       return new Peer({
       initiator: amitheinitiator,
       trickle: false,
+      objectMode:true,
+      
       // wrtc: wrtc
       // wrtc:nodeDatachannelPolyfill
     })
@@ -256,12 +258,20 @@ var response = await resp;
     // peer.signal(offer)
 
 }
+interface fileinfo{
+  fileType:string,
+  fileName:string,
+  fileSize:number
+
+}
 //  fetchData();
 //   // async ()=>{
 //   // }
 // },[answer])}
   // var onDataHandlerSet=false;
   // useEffect(() => {
+    let receiveBuffer=[]
+    let receivedSize=0
     const initpeer=()=>{
 
       if (peer) {
@@ -292,27 +302,54 @@ var response = await resp;
             // ably.close()
             
           })
+          
+          var e:fileinfo;
           peer.on('data', data => {
-            dlfd(data)
-                      var gd=JSON.parse(data) as DataTypeDesc;
-                      if (gd.dataType === MessageTypeDesc.FILE) {
-                        dlfd("recieved file")
-                        download(gd.file || '', gd.fileName || "fileName", gd.fileType)
-                    }
-                    else{
+            if (typeof data.byteLength !== "undefined") {
+              let percentage = 0;
+              receiveBuffer.push(data);
+              receivedSize += data.byteLength;
+              percentage = ((receivedSize / e.fileSize) * 100).toFixed(3);
+              peer.send(
+                JSON.stringify({
+                  type: "progress",
+                  value: percentage
+                })
+              );
+              if (e.fileSize !== 0 && e.fileName) {
+                if (receivedSize == e.fileSize) {
+                  const received = new Blob(receiveBuffer);
+                  receiveBuffer = [];
+                  download(received || '', e.fileName || "fileName", e.fileType)
+                }
+              }
+            } else {
+              try {
+                if (isJSON(data)) {
+                  var sData = JSON.parse(data);
       
-                      dlfd('Received'+ gd.message);
-                      // dlfd('Received', JSON.stringify(gd));
-                      // setm("Friend : " + gd.message)
-                    }
+                  if (sData.type === "progress") {
+                    console.log("progressing "+sData.value)
+                  }
+                  else if (sData.type === "fileinfo") {
+                    e=JSON.parse(sData.value)
+                  }
+                }
+              } catch (error) {
+                console.log("TryCatch", error);
+              }
+            }
           })
-     
-          // Mark 'data' event listener as set up
-          // onDataHandlerSet = true;
-        // }
       }
     //  }, [peer]);
     }
+    const isJSON = str => {
+      try {
+        return JSON.parse(str) && !!str;
+      } catch (e) {
+        return false;
+      }
+    };
     
   const handleJoin=() => {
     savepeer.current=startconn(false)
@@ -366,14 +403,15 @@ const [fileList, setFileList] = React.useState<[File]>([])
           try {
               await setSendLoading(true);
               let file = fileList[0] as unknown as File;
-              let blob = new Blob([file], {type: file.type});
+              
+              sendData(file)
         
-              await peer.send(JSON.stringify({
-                  dataType: MessageTypeDesc.FILE,
-                  file: blob,
-                  fileName: file.name,
-                  fileType: file.type
-              } as DataTypeDesc))
+              // await peer.send({
+              //   dataType: MessageTypeDesc.FILE,
+              //   file: blob,
+              //   fileName: file.name,
+              //   fileType: file.type
+              // })
               await setSendLoading(false)
               dlfd("Send file successfully")
           } catch (err) {
@@ -393,7 +431,53 @@ const [fileList, setFileList] = React.useState<[File]>([])
             setFileList([]);
           }
         }
-  
+        let sendBuffer = [];
+
+        const sendData = (file) => {
+          if (file.size === 0) {
+            dlfd("empty file")
+          }
+          const chunkSize = 32000;
+          var fileReader = new FileReader();
+          let offset = 0;
+          let fi:fileinfo={
+            fileType: file.type,
+            fileName: file.name,
+            fileSize: file.size
+          }
+          peer.send(JSON.stringify({
+            type:"fileinfo",
+            value:JSON.stringify(fi)
+          }))
+
+          sendBuffer=[]      
+          // wRTCTransferPaused = false;
+          fileReader.addEventListener("error", error =>
+            console.error("Error reading file:", error)
+          );
+          fileReader.addEventListener("abort", event =>
+            console.log("File reading aborted:", event)
+          );
+          fileReader.addEventListener("load", e => {
+            sendChunk(e.target.result);
+            offset += e.target.result.byteLength;
+            if (offset < file.size) {
+              readSlice(offset);
+            }
+          });
+          const readSlice = o => {
+            const slice = file.slice(offset, o + chunkSize);
+            fileReader.readAsArrayBuffer(slice);
+          };
+          readSlice(0);
+        };
+        const sendChunk = (data) => {
+          peer.send(data)
+          // if (wRTCTransferPaused) {
+          //   return;
+          // }
+      
+        };
     return (
       <div className='grid grid-flow-row'>
         {/* <h1>Simple Next.js App</h1> */}
