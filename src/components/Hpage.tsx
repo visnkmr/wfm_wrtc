@@ -100,8 +100,20 @@ export default function Hpage(){
     var savepeer=useRef();
     var showornot=useRef(false)
     var [readyforconn,setr]=useState(false)
+    const initialMessages = [
+      {
+        id: '1',
+        text: 'Hello, World!',
+        time: new Date().toString(),
+        userName: 'User1',
+        userColorIndex: 1,
+      },
+      // More messages...
+     ];
+     const [messages, setMessages] = React.useState(initialMessages);
+
     var [readytosend,setrts]=useState(false)
-    let [mh,setmh]=useState(Array<string>)
+    // let [mh,setmh]=useState([])
 
     var [joinoth,setjoth]=useState(false)
     var peer:Peer=savepeer.current;
@@ -341,8 +353,14 @@ interface fileinfo{
                   }
                   else if (sData.type === "message") {
                     // dlfd(JSON.stringify(sData.value))
-                    let newmh=[...mh,sData.value]
-                    setmh(newmh)
+                    const newMessage = {
+                      id: Date.now().toString(),
+                      text: sData.value,
+                      time: new Date().toString(),
+                      userName: 'User2',
+                      userColorIndex: 2,
+                    };
+                    setMessages((prevMessages) => [...prevMessages, newMessage]);
                   }
                 }
               } catch (error) {
@@ -520,7 +538,15 @@ const [fileList, setFileList] = React.useState<[File]>([])
 
         <button onClick={sendMessage}>Send</button>
         <br/>
-        <p>{mh}</p>
+        <ul>
+          {messages.map((message) => (
+            <li key={message.id}>
+              <span>{message.text}</span>
+              {/* <span>{message.time}</span> */}
+              {/* <span>{message.userName}</span> */}
+            </li>
+          ))}
+        </ul>
         <SendMessage peer={savepeer.current}/>
         <br />
         {/* <Fileup peer={savepeer.current}/> */}

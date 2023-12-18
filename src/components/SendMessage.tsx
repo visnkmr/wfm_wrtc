@@ -13,7 +13,7 @@ export default function SendMessage({peer}){
             {
             type:"message",
             value: 
-            'whatever' + Math.random()
+            text
     
           }))
             // setm("Me : " + msg.value)
