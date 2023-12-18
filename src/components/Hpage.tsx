@@ -393,23 +393,33 @@ interface fileinfo{
   }
 
 
-  const sendMessage=()=> {
-    dlfd("sending message")
-    // send message at sender or receiver side
-    if (peer) {
-      let sm=(JSON.stringify(
-        {
-        type:"message",
-        value: 
-        'whatever' + Math.random()
-
-      }))
-        // setm("Me : " + msg.value)
-        dlfd(sm)
-        peer.send(sm)
-        
+  let [text,addtext]=useState("")
+    const sendMessage=()=> {
+        // send message at sender or receiver side
+        if (peer) {
+            dlfd("sending message")
+          let sm=(JSON.stringify(
+            {
+            type:"message",
+            value: 
+            text
+    
+          }))
+            // setm("Me : " + msg.value)
+            dlfd(sm)
+            peer.send(sm)
+            // dlfd(JSON.stringify(sData.value))
+            const newMessage = {
+                id: Date.now().toString(),
+                text: text,
+                time: new Date().toString(),
+                userName: 'User2',
+                userColorIndex: 2,
+            };
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+            
+        }
     }
-}
 const joinothenable=()=>{
   setjoth(true)
 }
@@ -536,7 +546,7 @@ const [fileList, setFileList] = React.useState<[File]>([])
         <br />
         <div className={readytosend ? "block" : "hidden"}>
 
-        <button onClick={sendMessage}>Send</button>
+        {/* <button onClick={sendMessage}>Send</button> */}
         <br/>
         <ul>
           {messages.map((message) => (
@@ -547,7 +557,15 @@ const [fileList, setFileList] = React.useState<[File]>([])
             </li>
           ))}
         </ul>
-        <SendMessage peer={savepeer.current}/>
+        <textarea placeholder="Enter code here" className='bg-black text-white' value={text} onChange={(e) => {
+            addtext(e.target.value);
+            
+            }} />
+        <br />
+        {/* <p>
+            {mh}
+        </p> */}
+        <button onClick={sendMessage}>Send</button>
         <br />
         {/* <Fileup peer={savepeer.current}/> */}
         <input
