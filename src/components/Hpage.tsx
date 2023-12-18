@@ -11,6 +11,7 @@ import { useState } from 'react'
 import Peer from 'simple-peer'
 // import Ably from "ably"
 import download from "js-file-download"
+import SendMessage from './SendMessage';
 export enum MessageTypeDesc {
   FILE = 'FILE',
   OTHER = 'OTHER'
@@ -100,6 +101,8 @@ export default function Hpage(){
     var showornot=useRef(false)
     var [readyforconn,setr]=useState(false)
     var [readytosend,setrts]=useState(false)
+    let [mh,setmh]=useState(Array<string>)
+
     var [joinoth,setjoth]=useState(false)
     var peer:Peer=savepeer.current;
     var saveui4=useRef("");
@@ -332,7 +335,14 @@ interface fileinfo{
                     console.log("progressing "+sData.value)
                   }
                   else if (sData.type === "fileinfo") {
+                    dlfd(JSON.stringify(sData.value))
                     e=JSON.parse(sData.value)
+
+                  }
+                  else if (sData.type === "message") {
+                    // dlfd(JSON.stringify(sData.value))
+                    let newmh=[...mh,sData.value]
+                    setmh(newmh)
                   }
                 }
               } catch (error) {
@@ -371,11 +381,11 @@ interface fileinfo{
     if (peer) {
       let sm=(JSON.stringify(
         {
-        dataType:MessageTypeDesc.OTHER,
-        message: 
+        type:"message",
+        value: 
         'whatever' + Math.random()
 
-      } as DataTypeDesc))
+      }))
         // setm("Me : " + msg.value)
         dlfd(sm)
         peer.send(sm)
@@ -509,6 +519,9 @@ const [fileList, setFileList] = React.useState<[File]>([])
         <div className={readytosend ? "block" : "hidden"}>
 
         <button onClick={sendMessage}>Send</button>
+        <br/>
+        <p>{mh}</p>
+        <SendMessage peer={savepeer.current}/>
         <br />
         {/* <Fileup peer={savepeer.current}/> */}
         <input
